@@ -1,11 +1,14 @@
 # default options
 %define sdb_ldap 1
 %define sdb_mysql 0
+%define geoip 0
 
 %{?_with_sdb_ldap: %{expand: %%global sdb_ldap 1}}
 %{?_without_sdb_ldap: %{expand: %%global sdb_ldap 0}}
 %{?_with_sdb_mysql: %{expand: %%global sdb_mysql 1}}
 %{?_without_sdb_mysql: %{expand: %%global sdb_mysql 0}}
+%{?_with_geoip: %{expand: %%global geoip 1}}
+%{?_without_geoip: %{expand: %%global geoip 0}}
 
 %if %{sdb_mysql}
 %define sdb_ldap 0
@@ -15,10 +18,13 @@
 %define sdb_mysql 0
 %endif
 
+%if %{geoip}
+%define geoip 1
+%endif
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.4.0
-Release:	%mkrel 3
+Release:	%mkrel 4
 License:	distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -56,6 +62,8 @@ Patch203:	libbind-9.3.1rc1-fix_h_errno.patch
 Patch204:	bind-9.4.0rc1-ppc-asm.patch
 Patch205:	bind-9.3.2-prctl_set_dumpable.patch
 Patch206:	bind-9.3.3-edns.patch
+# (oe) rediffed patch originates from http://www.caraytech.com/geodns/
+Patch300:	bind-9.4.0-geoip.diff
 Requires(pre): rpm-helper
 Requires(postun): rpm-helper
 Requires:	bind-utils >= %{version}-%{release}
@@ -76,6 +84,9 @@ BuildRequires:	multiarch-utils >= 1.0.3
 %endif
 Obsoletes:	caching-nameserver
 Provides:	caching-nameserver
+%if %{geoip}
+BuildRequires:	libgeoip-devel
+%endif
 BuildRoot:	%{_tmppath}/%{name}-buildroot
 
 %description
@@ -112,6 +123,7 @@ Build Options:
                       per default)
 --with sdb_mysql      Build with MySQL database support (disables ldap
                       support, it's either way.)
+--with geoip          Build with GeoIP support (disabled per default)
 
 %package	utils
 Summary:	Utilities for querying DNS name servers
@@ -166,6 +178,10 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 %patch205 -p1 -b .prctl_set_dumpable
 %patch206 -p1 -b .edns
 
+%if %{geoip}
+%patch300 -p1 -b .geoip
+%endif
+
 cp %{SOURCE4} named.init
 cp %{SOURCE5} named.logrotate
 cp %{SOURCE6} named.sysconfig
@@ -190,6 +206,11 @@ popd
 
 export CFLAGS="-O2 -Wall -pipe -DLDAP_DEPRECATED"
 
+%if %{geoip}
+export CFLAGS="-O2 -Wall -pipe -DLDAP_DEPRECATED -DGEOIP"
+export LDFLAGS="$LDFLAGS -lGeoIP"
+%endif
+
 # threading is evil for the host command
 %configure \
     --localstatedir=/var \
@@ -200,8 +221,8 @@ export CFLAGS="-O2 -Wall -pipe -DLDAP_DEPRECATED"
     --with-openssl=%{_includedir}/openssl \
     --with-randomdev=/dev/urandom
 
-make CFLAGS="-O2 -Wall -pipe -DLDAP_DEPRECATED" -C lib
-make CFLAGS="-O2 -Wall -pipe -DLDAP_DEPRECATED" -C bin/dig
+make -C lib
+make -C bin/dig
 make -C bin/dig DESTDIR="`pwd`" install 
 make clean
 
@@ -214,8 +235,7 @@ make clean
     --with-openssl=%{_includedir}/openssl \
     --with-randomdev=/dev/urandom
 
-# override CFLAGS for better security.  Ask Jay... who's "Jay" ???
-make CFLAGS="-O2 -Wall -pipe -DLDAP_DEPRECATED"
+make
 
 # run the test suite
 #make check
@@ -224,28 +244,28 @@ make CFLAGS="-O2 -Wall -pipe -DLDAP_DEPRECATED"
 pushd zone2ldap
 # fix references to zone2ldap
 perl -pi -e "s|zone2ldap|zonetoldap|g" *
-    gcc %{optflags} -DLDAP_DEPRECATED -I../lib/dns/include -I../lib/dns/sec/dst/include \
+    gcc $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
     -I../lib/isc/include -I../lib/isc/unix/include -I../lib/isc/pthreads/include -c zone2ldap.c
-    gcc %{optflags} -DLDAP_DEPRECATED -o zone2ldap zone2ldap.o ../lib/dns/libdns.a  -lcrypto -lpthread \
-    ../lib/isc/libisc.a -lldap -llber -lresolv
+    gcc $CFLAGS -o zone2ldap zone2ldap.o ../lib/dns/libdns.a  -lcrypto -lpthread \
+    ../lib/isc/libisc.a -lldap -llber -lresolv $LDFLAGS
 popd
 
 pushd ldap2zone
-    gcc %{optflags} -DLDAP_DEPRECATED -I../lib/dns/include -I../lib/dns/sec/dst/include \
+    gcc $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
     -I../lib/isc/include -I../lib/isc/unix/include -I../lib/isc/pthreads/include -c ldap2zone.c
-    gcc %{optflags} -DLDAP_DEPRECATED -o ldap2zone ldap2zone.o ../lib/dns/libdns.a  -lcrypto -lpthread \
-    ../lib/isc/libisc.a -lldap -llber -lresolv
+    gcc $CFLAGS -o ldap2zone ldap2zone.o ../lib/dns/libdns.a  -lcrypto -lpthread \
+    ../lib/isc/libisc.a -lldap -llber -lresolv $LDFLAGS
 popd
 %endif
 
 %if %{sdb_mysql}
 pushd contrib/sdb/mysql
-gcc  -I%{_includedir}/mysql -I../../../lib/dns/include -I../../../lib/dns/sec/dst/include \
+gcc $CFLAGS -I%{_includedir}/mysql -I../../../lib/dns/include -I../../../lib/dns/sec/dst/include \
   -I../../../lib/isc/include -I../../../lib/isc/unix/include -I../../../lib/isc/pthreads/include \
   -c zonetodb.c
-gcc -o zonetodb zonetodb.o \
+gcc $CFLAGS -o zonetodb zonetodb.o \
   ../../../lib/dns/libdns.a  -lcrypto -lpthread ../../../lib/isc/libisc.a \
-  -lmysqlclient -lresolv
+  -lmysqlclient -lresolv $LDFLAGS
 popd
 %endif
 
@@ -425,6 +445,9 @@ fi
 %if %{sdb_mysql}
 %doc contrib/sdb/mysql/ChangeLog.mysql contrib/sdb/mysql/README.mysql
 %endif
+%if %{geoip}
+%doc geodns.INSTALL geodns.named.conf-sample
+%endif
 %config(noreplace) %{_sysconfdir}/sysconfig/named
 %config(noreplace) %{_sysconfdir}/logrotate.d/named
 %{_initrddir}/named
@@ -510,5 +533,3 @@ fi
 %{_mandir}/man8/nsupdate.8*
 %{_mandir}/man5/resolver.5*
 %{_mandir}/man5/resolv.5*
-
-

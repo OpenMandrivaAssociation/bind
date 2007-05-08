@@ -23,8 +23,8 @@
 %endif
 Summary:	A DNS (Domain Name System) server
 Name:		bind
-Version:	9.4.0
-Release:	%mkrel 4
+Version:	9.4.1
+Release:	%mkrel 1
 License:	distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/

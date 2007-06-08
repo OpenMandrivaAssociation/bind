@@ -24,7 +24,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.4.1
-Release:	%mkrel 1
+Release:	%mkrel 2
 License:	distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -50,6 +50,7 @@ Source15:	ldap2zone.tar.bz2
 Source16:	bind-9.3.1-missing_tools.tar.gz
 Patch0:		bind-fallback-to-second-server.diff
 Patch1:		bind-9.3.0-libresolv.patch
+Patch2:		bind-bsdcompat.patch
 Patch3:		bind-9.3.0beta2-libtool.diff
 Patch100:	bind-9.2.3-sdb_ldap.patch
 Patch101:	bind-9.3.1-zone2ldap_fixes.diff
@@ -153,6 +154,7 @@ BIND versions 9.x.x.
 %setup -q  -n %{name}-%{version} -a2 -a3 -a10 -a12 -a13 -a14 -a15 -a16
 %patch0 -p1 -b .fallback-to-second-server.droplet
 %patch1 -p1 -b .libresolv.droplet
+%patch2 -p1 -b .bind-bsdcompat.droplet
 %patch3 -p1 -b .libtool.droplet
 
 %if %{sdb_ldap}
@@ -193,6 +195,13 @@ find . -type f|xargs file|grep 'CRLF'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
 find . -type f|xargs file|grep 'text'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
 
 %build
+%serverbuild
+
+%if %mdkversion >= 200710
+export CFLAGS="$CFLAGS -fstack-protector"
+export CXXFLAGS="$CXXFLAGS -fstack-protector"
+export FFLAGS="$FFLAGS -fstack-protector"
+%endif
 
 # (oe) make queryperf from the contrib _before_ bind..., makes it
 # easier to determine if it builds or not, it saves time...
@@ -201,13 +210,13 @@ export WANT_AUTOCONF_2_5=1
 rm -f configure
 autoconf
 %configure2_5x
-%make CFLAGS="%{optflags}"
+%make CFLAGS="$CFLAGS"
 popd
 
-export CFLAGS="-O2 -Wall -pipe -DLDAP_DEPRECATED"
+export CFLAGS="$CFLAGS -DLDAP_DEPRECATED"
 
 %if %{geoip}
-export CFLAGS="-O2 -Wall -pipe -DLDAP_DEPRECATED -DGEOIP"
+export CFLAGS="$CFLAGS -DLDAP_DEPRECATED -DGEOIP"
 export LDFLAGS="$LDFLAGS -lGeoIP"
 %endif
 
@@ -269,7 +278,7 @@ gcc $CFLAGS -o zonetodb zonetodb.o \
 popd
 %endif
 
-gcc %{optflags} -o dns-keygen keygen.c
+gcc $CFLAGS -o dns-keygen keygen.c
 
 %install
 [ -n "%{buildroot}" -a "%{buildroot}" != / ] && rm -rf %{buildroot}

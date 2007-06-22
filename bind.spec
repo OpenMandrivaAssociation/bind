@@ -24,7 +24,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.4.1
-Release:	%mkrel 2
+Release:	%mkrel 3
 License:	distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -196,12 +196,6 @@ find . -type f|xargs file|grep 'text'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
 
 %build
 %serverbuild
-
-%if %mdkversion >= 200710
-export CFLAGS="$CFLAGS -fstack-protector"
-export CXXFLAGS="$CXXFLAGS -fstack-protector"
-export FFLAGS="$FFLAGS -fstack-protector"
-%endif
 
 # (oe) make queryperf from the contrib _before_ bind..., makes it
 # easier to determine if it builds or not, it saves time...

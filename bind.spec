@@ -355,7 +355,7 @@ install -m0644 named.cache.tmp %{buildroot}%{_localstatedir}/named/var/named/nam
 
 # fix man pages
 install -m0644 man5/resolver.5 %{buildroot}%{_mandir}/man5/
-ln -s resolver.5.bz2 %{buildroot}%{_mandir}/man5/resolv.5.bz2
+ln -s resolver.5 %{buildroot}%{_mandir}/man5/resolv.5
 
 # the following 3 lines is needed to make it short-circuit compliant.
 pushd doc

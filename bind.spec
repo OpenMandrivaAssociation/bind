@@ -25,7 +25,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.4.1
-Release:	%mkrel 5
+Release:	%mkrel 6
 License:	distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -34,7 +34,6 @@ Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-P1.tar.gz.
 Source2:	bind-manpages.tar.bz2
 Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2
 Source4:	bind-named.init
-Source5:	bind-named.logrotate
 Source6:	bind-named.sysconfig
 Source7:	bind-keygen.c
 Source11:	bind-named.root
@@ -199,7 +198,6 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 %endif
 
 cp %{SOURCE4} named.init
-cp %{SOURCE5} named.logrotate
 cp %{SOURCE6} named.sysconfig
 cp %{SOURCE7} keygen.c
 cp %{SOURCE11} named.cache
@@ -312,9 +310,8 @@ popd
 
 # make some directories
 install -d %{buildroot}%{_initrddir}
-install -d %{buildroot}%{_sysconfdir}/{logrotate.d,sysconfig}
+install -d %{buildroot}%{_sysconfdir}/sysconfig
 install -d %{buildroot}/var/run/named 
-install -d %{buildroot}/var/log/named 
 
 %makeinstall_std
 
@@ -325,7 +322,6 @@ install -m0755 contrib/queryperf/queryperf %{buildroot}%{_sbindir}/
 cp contrib/queryperf/README contrib/queryperf/README.queryperf
 
 install -m0755 named.init %{buildroot}%{_initrddir}/named
-install -m0644 named.logrotate %{buildroot}%{_sysconfdir}/logrotate.d/named
 install -m0644 named.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/named
 
 %if %{sdb_ldap}
@@ -481,7 +477,6 @@ fi
 %doc geodns.INSTALL geodns.named.conf-sample
 %endif
 %config(noreplace) %{_sysconfdir}/sysconfig/named
-%config(noreplace) %{_sysconfdir}/logrotate.d/named
 %{_initrddir}/named
 %{_sbindir}/dns-keygen
 %{_sbindir}/dnssec-keygen

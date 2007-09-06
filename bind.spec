@@ -21,10 +21,11 @@
 %if %{geoip}
 %define geoip 1
 %endif
+
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.4.1
-Release:	%mkrel 4
+Release:	%mkrel 5
 License:	distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -36,7 +37,6 @@ Source4:	bind-named.init
 Source5:	bind-named.logrotate
 Source6:	bind-named.sysconfig
 Source7:	bind-keygen.c
-Source10:	caching-nameserver.tar.bz2
 Source11:	bind-named.root
 # (oe) http://mysql-bind.sourceforge.net/
 Source12:	mysql-bind-0.1.tar.bz2
@@ -48,6 +48,20 @@ Source14:	zone2ldap/zone2ldap-0.4.tar.bz2
 Source15:	ldap2zone.tar.bz2
 # (oe) these tools were removed, no reason given...
 Source16:	bind-9.3.1-missing_tools.tar.gz
+# caching-nameserver files (S100-S112)
+Source100:	bogon_acl.conf
+Source101:	hosts
+Source102:	localdomain.zone
+Source103:	localhost.zone
+Source104:	logging.conf
+Source105:	named.broadcast
+Source106:	named.conf
+Source107:	named.ip6.local
+Source108:	named.local
+Source109:	named.zero
+Source110:	rndc.conf
+Source111:	rndc.key
+Source112:	trusted_networks_acl.conf
 Patch0:		bind-fallback-to-second-server.diff
 Patch1:		bind-9.3.0-libresolv.patch
 Patch2:		bind-bsdcompat.patch
@@ -151,7 +165,7 @@ BIND versions 9.x.x.
 
 %prep
 
-%setup -q  -n %{name}-%{version}-P1 -a2 -a3 -a10 -a12 -a13 -a14 -a15 -a16
+%setup -q  -n %{name}-%{version}-P1 -a2 -a3 -a12 -a13 -a14 -a15 -a16
 %patch0 -p1 -b .fallback-to-second-server.droplet
 %patch1 -p1 -b .libresolv.droplet
 %patch2 -p1 -b .bind-bsdcompat.droplet
@@ -189,6 +203,21 @@ cp %{SOURCE5} named.logrotate
 cp %{SOURCE6} named.sysconfig
 cp %{SOURCE7} keygen.c
 cp %{SOURCE11} named.cache
+
+mkdir -p caching-nameserver
+cp %{SOURCE100} caching-nameserver/bogon_acl.conf
+cp %{SOURCE101} caching-nameserver/hosts
+cp %{SOURCE102} caching-nameserver/localdomain.zone
+cp %{SOURCE103} caching-nameserver/localhost.zone
+cp %{SOURCE104} caching-nameserver/logging.conf
+cp %{SOURCE105} caching-nameserver/named.broadcast
+cp %{SOURCE106} caching-nameserver/named.conf
+cp %{SOURCE107} caching-nameserver/named.ip6.local
+cp %{SOURCE108} caching-nameserver/named.local
+cp %{SOURCE109} caching-nameserver/named.zero
+cp %{SOURCE110} caching-nameserver/rndc.conf
+cp %{SOURCE111} caching-nameserver/rndc.key
+cp %{SOURCE112} caching-nameserver/trusted_networks_acl.conf
 
 # strip away annoying ^M
 find . -type f|xargs file|grep 'CRLF'|cut -d: -f1|xargs perl -p -i -e 's/\r//'

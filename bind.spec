@@ -162,6 +162,13 @@ The bind-devel package contains all the include files and the
 library required for DNS (Domain Name Service) development for
 BIND versions 9.x.x.
 
+%package	doc
+Summary:	Documentation for BIND
+Group:		Books/Other
+
+%description	doc
+The bind-devel package contains the documentation for BIND.
+
 %prep
 
 %setup -q  -n %{name}-%{version}-P1 -a2 -a3 -a12 -a13 -a14 -a15 -a16
@@ -228,6 +235,15 @@ find . -type f|xargs file|grep 'text'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
 # easier to determine if it builds or not, it saves time...
 pushd contrib/queryperf
 export WANT_AUTOCONF_2_5=1
+rm -f configure
+autoconf
+%configure2_5x
+%make CFLAGS="$CFLAGS"
+popd
+
+pushd contrib/query-loc-*
+export WANT_AUTOCONF_2_5=1
+perl -pi -e "s|-lnsl|-lnsl -lresolv|g" configure*
 rm -f configure
 autoconf
 %configure2_5x
@@ -304,8 +320,16 @@ install -d %{buildroot}/var/run/named
 ln -snf named %{buildroot}%{_sbindir}/lwresd
 
 install -m0755 contrib/named-bootconf/named-bootconf.sh %{buildroot}%{_sbindir}/named-bootconf
-install -m0755 contrib/queryperf/queryperf %{buildroot}%{_sbindir}/
-cp contrib/queryperf/README contrib/queryperf/README.queryperf
+install -m0755 contrib/queryperf/queryperf %{buildroot}%{_bindir}/
+cp contrib/queryperf/README README.queryperf
+
+install -m0755 contrib/query-loc-*/query-loc %{buildroot}%{_bindir}/
+install -m0644 contrib/query-loc-*/query-loc.1 %{buildroot}%{_mandir}/man1/
+cp contrib/query-loc-*/ADDRESSES ADDRESSES.query-loc
+cp contrib/query-loc-*/ALGO ALGO.query-loc
+cp contrib/query-loc-*/README README.query-loc
+cp contrib/query-loc-*/USAGE USAGE.query-loc
+
 
 install -m0755 named.init %{buildroot}%{_initrddir}/named
 install -m0644 named.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/named
@@ -446,9 +470,6 @@ fi
 %files
 %defattr(-,root,root)
 %doc CHANGES README FAQ COPYRIGHT README.urpmi
-%doc contrib/queryperf/README.queryperf
-%doc doc/draft doc/html doc/rfc doc/misc/
-%doc doc/dhcp-dynamic-dns-examples doc/chroot doc/trustix
 %if %{sdb_ldap}
 %doc contrib/sdb/ldap/README.ldap contrib/sdb/ldap/INSTALL.ldap
 %endif
@@ -471,10 +492,8 @@ fi
 %{_sbindir}/named-checkconf
 %{_sbindir}/named-checkzone
 %{_sbindir}/named-compilezone
-%{_sbindir}/queryperf
 %{_sbindir}/rndc
 %{_sbindir}/rndc-confgen
-%{_mandir}/man3/lwres*.3*
 %{_mandir}/man5/rndc.conf.5*
 %{_mandir}/man5/named.conf.5*
 %{_mandir}/man8/rndc.8*
@@ -522,17 +541,21 @@ fi
 %{_bindir}/isc-config.sh
 %{_includedir}/*
 %{_libdir}/*.a
+%{_mandir}/man3/lwres*.3*
 
 %files utils
 %defattr(-,root,root)
-%doc README COPYRIGHT
+%doc README COPYRIGHT *.query-loc *.queryperf
 %{_bindir}/dig
 %{_bindir}/host
 %{_bindir}/nslookup
 %{_bindir}/nsupdate
+%{_bindir}/queryperf
+%{_bindir}/query-loc
 %{_mandir}/man1/host.1*
 %{_mandir}/man1/dig.1*
 %{_mandir}/man1/nslookup.1*
+%{_mandir}/man1/query-loc.1*
 %if %{sdb_ldap}
 %doc zone2ldap/zone2ldap.README ldap2zone/README.ldap2zone ldap2zone/dnszone-schema.txt
 %{_bindir}/zonetoldap
@@ -542,3 +565,8 @@ fi
 %{_mandir}/man8/nsupdate.8*
 %{_mandir}/man5/resolver.5*
 %{_mandir}/man5/resolv.5*
+
+%files doc
+%defattr(-,root,root)
+%doc doc/draft doc/html doc/rfc doc/misc/
+%doc doc/dhcp-dynamic-dns-examples doc/chroot doc/trustix

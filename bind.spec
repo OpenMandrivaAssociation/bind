@@ -24,13 +24,13 @@
 
 Summary:	A DNS (Domain Name System) server
 Name:		bind
-Version:	9.4.1
-Release:	%mkrel 9
+Version:	9.4.2
+Release:	%mkrel 1
 License:	distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
-Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-P1.tar.gz
-Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-P1.tar.gz.asc
+Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz
+Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz.asc
 Source2:	bind-manpages.tar.bz2
 Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2
 Source4:	bind-named.init
@@ -62,8 +62,6 @@ Source110:	rndc.conf
 Source111:	rndc.key
 Source112:	trusted_networks_acl.conf
 Patch0:		bind-fallback-to-second-server.diff
-Patch1:		bind-9.3.0-libresolv.patch
-Patch2:		bind-bsdcompat.patch
 Patch3:		bind-9.3.0beta2-libtool.diff
 Patch100:	bind-9.2.3-sdb_ldap.patch
 Patch101:	bind-9.3.1-zone2ldap_fixes.diff
@@ -171,10 +169,8 @@ The bind-devel package contains the documentation for BIND.
 
 %prep
 
-%setup -q  -n %{name}-%{version}-P1 -a2 -a3 -a12 -a13 -a14 -a15 -a16
+%setup -q  -n %{name}-%{version} -a2 -a3 -a12 -a13 -a14 -a15 -a16
 %patch0 -p1 -b .fallback-to-second-server.droplet
-%patch1 -p1 -b .libresolv.droplet
-%patch2 -p1 -b .bind-bsdcompat.droplet
 %patch3 -p1 -b .libtool.droplet
 
 %if %{sdb_ldap}

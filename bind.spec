@@ -99,6 +99,7 @@ Provides:	caching-nameserver
 %if %{geoip}
 BuildRequires:	libgeoip-devel
 %endif
+BuildRoot:	%{_tmppath}/%{name}-buildroot
 
 %description
 BIND (Berkeley Internet Name Domain) is an implementation of the DNS

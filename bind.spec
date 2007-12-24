@@ -25,7 +25,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.4.2
-Release:	%mkrel 1
+Release:	%mkrel 2
 License:	distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/

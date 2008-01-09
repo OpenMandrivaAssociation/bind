@@ -24,13 +24,13 @@
 
 Summary:	A DNS (Domain Name System) server
 Name:		bind
-Version:	9.4.2
-Release:	%mkrel 2
+Version:	9.5.0
+Release:	%mkrel 0.b1.2
 License:	distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
-Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz
-Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz.asc
+Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}b1.tar.gz
+Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}b1.tar.gz.asc
 Source2:	bind-manpages.tar.bz2
 Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2
 Source4:	bind-named.init
@@ -62,7 +62,8 @@ Source110:	rndc.conf
 Source111:	rndc.key
 Source112:	trusted_networks_acl.conf
 Patch0:		bind-fallback-to-second-server.diff
-Patch3:		bind-9.3.0beta2-libtool.diff
+Patch1:		bind-queryperf_fix.diff
+Patch2:		bind-9.3.0beta2-libtool.diff
 Patch100:	bind-9.2.3-sdb_ldap.patch
 Patch101:	bind-9.3.1-zone2ldap_fixes.diff
 Patch102:	bind-9.3.0rc2-sdb_mysql.patch
@@ -73,7 +74,16 @@ Patch202:	bind-9.3.2b1-missing-dnssec-tools.diff
 Patch203:	libbind-9.3.1rc1-fix_h_errno.patch
 Patch204:	bind-9.4.0rc1-ppc-asm.patch
 Patch205:	bind-9.3.2-prctl_set_dumpable.patch
-Patch206:	bind-9.3.3-edns.patch
+Patch206:	bind-9.4.0-dnssec-directory.patch
+Patch207:	bind-9.5.0-generate-xml.patch
+Patch208:	bind-9.5-overflow.patch
+Patch209:	bind-9.5-dlz-64bit.patch
+Patch210: 	bind-9.2.2-nsl.patch
+Patch211:	bind-9.5-edns.patch
+Patch212:	bind-9.5-libidn.patch
+Patch213:	bind-9.5-libidn2.patch
+Patch214:	bind-9.5-gssapi-header.patch
+Patch215:	bind-9.5-libidn3.patch
 # (oe) rediffed patch originates from http://www.caraytech.com/geodns/
 Patch300:	bind-9.4.0-geoip.diff
 Requires(pre): rpm-helper
@@ -84,7 +94,7 @@ BuildRequires:	autoconf2.5
 BuildRequires:	automake1.7
 BuildRequires:  file
 %if %{sdb_mysql}
-BuildRequires:	MySQL-devel
+BuildRequires:	mysql-devel
 %endif
 %if %{sdb_ldap}
 BuildRequires:	openldap-devel
@@ -99,6 +109,9 @@ Provides:	caching-nameserver
 %if %{geoip}
 BuildRequires:	libgeoip-devel
 %endif
+BuildRequires:	libidn-devel
+BuildRequires:	mysql-devel
+BuildRequires:	postgresql-devel
 BuildRoot:	%{_tmppath}/%{name}-buildroot
 
 %description
@@ -169,9 +182,11 @@ The bind-devel package contains the documentation for BIND.
 
 %prep
 
-%setup -q  -n %{name}-%{version} -a2 -a3 -a12 -a13 -a14 -a15 -a16
+%setup -q  -n %{name}-%{version}b1 -a2 -a3 -a12 -a13 -a14 -a15 -a16
+
 %patch0 -p1 -b .fallback-to-second-server.droplet
-%patch3 -p1 -b .libtool.droplet
+%patch1 -p0 -b .queryperf_fix.droplet
+%patch2 -p1 -b .libtool.droplet
 
 %if %{sdb_ldap}
 %__cp bind-sdb-ldap-*/ldapdb.c bin/named/
@@ -192,9 +207,18 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 #%patch201 -p1 -b .handle_send_errors
 %patch202 -p0 -b .missing_dnssec_tools.droplet
 %patch203 -p1 -b .fix_h_errno.droplet
-%patch204 -p1 -b .no-register-names
-%patch205 -p1 -b .prctl_set_dumpable
-%patch206 -p1 -b .edns
+%patch204 -p1 -b .no-register-names.droplet
+%patch205 -p1 -b .prctl_set_dumpable.droplet
+%patch206 -p1 -b .directory.droplet
+%patch207 -p1 -b .generate-xml.droplet
+%patch208 -p1 -b .overflow.droplet
+%patch209 -p1 -b .64bit
+%patch210 -p1 -b .nsl
+%patch211 -p1 -b .edns.droplet
+%patch212 -p1 -b .libidn
+%patch213 -p1 -b .libidn2
+%patch214 -p1 -b .gssapi-header
+%patch215 -p1 -b .libidn3
 
 %if %{geoip}
 %patch300 -p1 -b .geoip
@@ -226,6 +250,8 @@ find . -type f|xargs file|grep 'text'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
 
 %build
 %serverbuild
+export WANT_AUTOCONF_2_5=1
+libtoolize --copy --force; aclocal; autoconf
 
 # (oe) make queryperf from the contrib _before_ bind..., makes it
 # easier to determine if it builds or not, it saves time...
@@ -261,7 +287,15 @@ export LDFLAGS="$LDFLAGS -lGeoIP"
     --enable-largefile \
     --enable-ipv6 \
     --with-openssl=%{_includedir}/openssl \
-    --with-randomdev=/dev/urandom
+    --with-randomdev=/dev/urandom \
+    --with-libxml2=no \
+    --with-dlz-postgres=yes \
+    --with-dlz-mysql=yes \
+    --with-dlz-bdb=no \
+    --with-dlz-filesystem=yes \
+    --with-dlz-ldap=yes \
+    --with-dlz-odbc=no \
+    --with-dlz-stub=yes
 
 make
 

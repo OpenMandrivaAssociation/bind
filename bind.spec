@@ -25,7 +25,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.5.0
-Release:	%mkrel 0.b1.1
+Release:	%mkrel 0.b1.2
 License:	distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -84,6 +84,7 @@ Patch212:	bind-9.5-libidn.patch
 Patch213:	bind-9.5-libidn2.patch
 Patch214:	bind-9.5-gssapi-header.patch
 Patch215:	bind-9.5-libidn3.patch
+Patch216:	bind-9.5-CVE-2008-0122.patch
 # (oe) rediffed patch originates from http://www.caraytech.com/geodns/
 Patch300:	bind-9.4.0-geoip.diff
 Requires(pre): rpm-helper
@@ -219,6 +220,7 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 %patch213 -p1 -b .libidn2
 %patch214 -p1 -b .gssapi-header
 %patch215 -p1 -b .libidn3
+%patch216 -p0 -b .CVE-2008-0122
 
 %if %{geoip}
 %patch300 -p1 -b .geoip

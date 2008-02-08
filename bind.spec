@@ -25,7 +25,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.5.0
-Release:	%mkrel 0.b1.2
+Release:	%mkrel 0.b1.3
 License:	distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -36,7 +36,7 @@ Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2
 Source4:	bind-named.init
 Source6:	bind-named.sysconfig
 Source7:	bind-keygen.c
-Source11:	bind-named.root
+Source11:	ftp://ftp.internic.net/domain/named.cache
 # (oe) http://mysql-bind.sourceforge.net/
 Source12:	mysql-bind-0.1.tar.bz2
 # (oe) http://www.venaas.no/ldap/bind-sdb/bind-sdb-ldap-1.0.tar.gz

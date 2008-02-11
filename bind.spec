@@ -25,12 +25,12 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.5.0
-Release:	%mkrel 0.b1.3
+Release:	%mkrel 0.b2.1
 License:	distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
-Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}b1.tar.gz
-Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}b1.tar.gz.asc
+Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}b2.tar.gz
+Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}b2.tar.gz.asc
 Source2:	bind-manpages.tar.bz2
 Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2
 Source4:	bind-named.init
@@ -82,9 +82,7 @@ Patch210: 	bind-9.2.2-nsl.patch
 Patch211:	bind-9.5-edns.patch
 Patch212:	bind-9.5-libidn.patch
 Patch213:	bind-9.5-libidn2.patch
-Patch214:	bind-9.5-gssapi-header.patch
 Patch215:	bind-9.5-libidn3.patch
-Patch216:	bind-9.5-CVE-2008-0122.patch
 # (oe) rediffed patch originates from http://www.caraytech.com/geodns/
 Patch300:	bind-9.4.0-geoip.diff
 Requires(pre): rpm-helper
@@ -183,7 +181,7 @@ The bind-devel package contains the documentation for BIND.
 
 %prep
 
-%setup -q  -n %{name}-%{version}b1 -a2 -a3 -a12 -a13 -a14 -a15 -a16
+%setup -q  -n %{name}-%{version}b2 -a2 -a3 -a12 -a13 -a14 -a15 -a16
 
 %patch0 -p1 -b .fallback-to-second-server.droplet
 %patch1 -p0 -b .queryperf_fix.droplet
@@ -218,9 +216,7 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 %patch211 -p1 -b .edns.droplet
 %patch212 -p1 -b .libidn
 %patch213 -p1 -b .libidn2
-%patch214 -p1 -b .gssapi-header
 %patch215 -p1 -b .libidn3
-%patch216 -p0 -b .CVE-2008-0122
 
 %if %{geoip}
 %patch300 -p1 -b .geoip

@@ -25,8 +25,8 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.5.0
-Release:	%mkrel 0.b2.1
-License:	distributable
+Release:	%mkrel 0.b2.2
+License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}b2.tar.gz

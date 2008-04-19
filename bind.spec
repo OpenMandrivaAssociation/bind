@@ -25,12 +25,12 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.5.0
-Release:	%mkrel 0.b2.4
+Release:	%mkrel 0.b3.1
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
-Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}b2.tar.gz
-Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}b2.tar.gz.asc
+Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}b3.tar.gz
+Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}b3.tar.gz.asc
 Source2:	bind-manpages.tar.bz2
 Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2
 Source4:	bind-named.init
@@ -75,7 +75,6 @@ Patch203:	libbind-9.3.1rc1-fix_h_errno.patch
 Patch204:	bind-9.4.0rc1-ppc-asm.patch
 Patch205:	bind-9.3.2-prctl_set_dumpable.patch
 Patch206:	bind-9.4.0-dnssec-directory.patch
-Patch207:	bind-9.5.0-generate-xml.patch
 Patch208:	bind-9.5-overflow.patch
 Patch209:	bind-9.5-dlz-64bit.patch
 Patch210: 	bind-9.2.2-nsl.patch
@@ -111,7 +110,7 @@ BuildRequires:	libgeoip-devel
 BuildRequires:	libidn-devel
 BuildRequires:	mysql-devel
 BuildRequires:	postgresql-devel
-BuildRoot:	%{_tmppath}/%{name}-buildroot
+BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
 BIND (Berkeley Internet Name Domain) is an implementation of the DNS
@@ -181,7 +180,7 @@ The bind-devel package contains the documentation for BIND.
 
 %prep
 
-%setup -q  -n %{name}-%{version}b2 -a2 -a3 -a12 -a13 -a14 -a15 -a16
+%setup -q  -n %{name}-%{version}b3 -a2 -a3 -a12 -a13 -a14 -a15 -a16
 
 %patch0 -p1 -b .fallback-to-second-server.droplet
 %patch1 -p0 -b .queryperf_fix.droplet
@@ -209,7 +208,6 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 %patch204 -p1 -b .no-register-names.droplet
 %patch205 -p1 -b .prctl_set_dumpable.droplet
 %patch206 -p1 -b .directory.droplet
-%patch207 -p1 -b .generate-xml.droplet
 %patch208 -p1 -b .overflow.droplet
 %patch209 -p1 -b .64bit
 %patch210 -p1 -b .nsl

@@ -375,9 +375,9 @@ cp contrib/sdb/mysql/README contrib/sdb/mysql/README.mysql
 install -m0755 dns-keygen %{buildroot}%{_sbindir}/dns-keygen
 
 # make the chroot
-install -d %{buildroot}%{_localstatedir}/named/{dev,etc}
-install -d %{buildroot}%{_localstatedir}/named/var/{log,run,tmp}
-install -d %{buildroot}%{_localstatedir}/named/var/named/{master,slaves,reverse}
+install -d %{buildroot}%{_localstatedir}/lib/named/{dev,etc}
+install -d %{buildroot}%{_localstatedir}/lib/named/var/{log,run,tmp}
+install -d %{buildroot}%{_localstatedir}/lib/named/var/named/{master,slaves,reverse}
 
 install -m 644 \
     caching-nameserver/named.conf \
@@ -385,30 +385,30 @@ install -m 644 \
     caching-nameserver/trusted_networks_acl.conf \
     caching-nameserver/hosts \
     caching-nameserver/bogon_acl.conf \
-    %{buildroot}%{_localstatedir}/named/etc
+    %{buildroot}%{_localstatedir}/lib/named/etc
 install -m 640 \
     caching-nameserver/rndc.conf\
     caching-nameserver/rndc.key \
-    %{buildroot}%{_localstatedir}/named/etc
+    %{buildroot}%{_localstatedir}/lib/named/etc
 install -m 644 \
     caching-nameserver/localdomain.zone \
     caching-nameserver/localhost.zone \
-    %{buildroot}%{_localstatedir}/named/var/named/master
+    %{buildroot}%{_localstatedir}/lib/named/var/named/master
 install -m 644 \
     caching-nameserver/named.broadcast  \
     caching-nameserver/named.ip6.local \
     caching-nameserver/named.local \
     caching-nameserver/named.zero \
-    %{buildroot}%{_localstatedir}/named/var/named/reverse
+    %{buildroot}%{_localstatedir}/lib/named/var/named/reverse
 
 # fix some compat symlinks
-ln -s %{_localstatedir}/named/etc/named.conf %{buildroot}%{_sysconfdir}/named.conf
-ln -s %{_localstatedir}/named/etc/rndc.conf %{buildroot}%{_sysconfdir}/rndc.conf
-ln -s %{_localstatedir}/named/etc/rndc.key %{buildroot}%{_sysconfdir}/rndc.key
+ln -s %{_localstatedir}/lib/named/etc/named.conf %{buildroot}%{_sysconfdir}/named.conf
+ln -s %{_localstatedir}/lib/named/etc/rndc.conf %{buildroot}%{_sysconfdir}/rndc.conf
+ln -s %{_localstatedir}/lib/named/etc/rndc.key %{buildroot}%{_sysconfdir}/rndc.key
 
 echo "; Use \"dig @A.ROOT-SERVERS.NET . ns\" to update this file if it's outdated." > named.cache.tmp
 cat named.cache >> named.cache.tmp
-install -m0644 named.cache.tmp %{buildroot}%{_localstatedir}/named/var/named/named.ca
+install -m0644 named.cache.tmp %{buildroot}%{_localstatedir}/lib/named/var/named/named.ca
 
 # fix man pages
 install -m0644 man5/resolver.5 %{buildroot}%{_mandir}/man5/
@@ -438,21 +438,21 @@ The most significant changes starting from the bind-9.3.2-5mdk package:
 EOF
 
 %pre
-%_pre_useradd named %{_localstatedir}/named /bin/false
+%_pre_useradd named %{_localstatedir}/lib/named /bin/false
 
 # adjust home dir location if needed 
 if [ "`getent passwd named | awk -F: '{print $6}'`" == "/var/named" ]; then
-    usermod -d %{_localstatedir}/named named
+    usermod -d %{_localstatedir}/lib/named named
 fi
 
 # check if bind is chrooted and try to restore it
 if [ -x %{_sbindir}/bind-chroot.sh ]; then
-    ROOTDIR="%{_localstatedir}/named-chroot"
+    ROOTDIR="%{_localstatedir}/lib/named-chroot"
     [ -f /etc/sysconfig/named ] && . /etc/sysconfig/named
-    if [ -d $ROOTDIR -a ! -d %{_localstatedir}/named ]; then
-	echo "old chroot found at $ROOTDIR, copying to %{_localstatedir}/named"
-        cp -rp $ROOTDIR %{_localstatedir}/named
-	chown -R named:named %{_localstatedir}/named
+    if [ -d $ROOTDIR -a ! -d %{_localstatedir}/lib/named ]; then
+	echo "old chroot found at $ROOTDIR, copying to %{_localstatedir}/lib/named"
+        cp -rp $ROOTDIR %{_localstatedir}/lib/named
+	chown -R named:named %{_localstatedir}/lib/named
     fi
     if grep -q "$ROOTDIR" /etc/sysconfig/syslog; then
 	if [ -f /var/lock/subsys/named ]; then
@@ -474,9 +474,9 @@ for f in named.conf rndc.conf rndc.key; do
 done
 
 %post
-if grep -q "_MY_KEY_" %{_localstatedir}/named/etc/rndc.conf %{_localstatedir}/named/etc/rndc.key; then
+if grep -q "_MY_KEY_" %{_localstatedir}/lib/named/etc/rndc.conf %{_localstatedir}/lib/named/etc/rndc.key; then
     MYKEY="`%{_sbindir}/dns-keygen`"
-    perl -pi -e "s|_MY_KEY_|$MYKEY|g" %{_localstatedir}/named/etc/rndc.conf %{_localstatedir}/named/etc/rndc.key
+    perl -pi -e "s|_MY_KEY_|$MYKEY|g" %{_localstatedir}/lib/named/etc/rndc.conf %{_localstatedir}/lib/named/etc/rndc.key
 fi
 
 %_post_service named
@@ -529,34 +529,34 @@ fi
 %{_mandir}/man8/lwresd.8*
 %{_mandir}/man8/named-*.8*
 # the chroot
-%dir %{_localstatedir}/named
-%dir %{_localstatedir}/named/dev
-%dir %{_localstatedir}/named/etc
-%dir %{_localstatedir}/named/var
-%dir %{_localstatedir}/named/var/named
-%attr(-,named,named) %dir %{_localstatedir}/named/var/log
-%attr(-,named,named) %dir %{_localstatedir}/named/var/run
-%attr(-,named,named) %dir %{_localstatedir}/named/var/tmp
-%attr(-,named,named) %dir %{_localstatedir}/named/var/named/master
-%attr(-,named,named) %dir %{_localstatedir}/named/var/named/slaves
-%attr(-,named,named) %dir %{_localstatedir}/named/var/named/reverse
-%config(noreplace) %{_localstatedir}/named/etc/named.conf
-%attr(-,root,named) %config(noreplace) %{_localstatedir}/named/etc/rndc.conf
-%attr(-,root,named) %config(noreplace) %{_localstatedir}/named/etc/rndc.key
+%dir %{_localstatedir}/lib/named
+%dir %{_localstatedir}/lib/named/dev
+%dir %{_localstatedir}/lib/named/etc
+%dir %{_localstatedir}/lib/named/var
+%dir %{_localstatedir}/lib/named/var/named
+%attr(-,named,named) %dir %{_localstatedir}/lib/named/var/log
+%attr(-,named,named) %dir %{_localstatedir}/lib/named/var/run
+%attr(-,named,named) %dir %{_localstatedir}/lib/named/var/tmp
+%attr(-,named,named) %dir %{_localstatedir}/lib/named/var/named/master
+%attr(-,named,named) %dir %{_localstatedir}/lib/named/var/named/slaves
+%attr(-,named,named) %dir %{_localstatedir}/lib/named/var/named/reverse
+%config(noreplace) %{_localstatedir}/lib/named/etc/named.conf
+%attr(-,root,named) %config(noreplace) %{_localstatedir}/lib/named/etc/rndc.conf
+%attr(-,root,named) %config(noreplace) %{_localstatedir}/lib/named/etc/rndc.key
 %{_sysconfdir}/named.conf
 %{_sysconfdir}/rndc.conf
 %{_sysconfdir}/rndc.key
-%config(noreplace) %{_localstatedir}/named/etc/bogon_acl.conf
-%config(noreplace) %{_localstatedir}/named/etc/logging.conf
-%config(noreplace) %{_localstatedir}/named/etc/trusted_networks_acl.conf
-%config(noreplace) %{_localstatedir}/named/etc/hosts
-%config(noreplace) %{_localstatedir}/named/var/named/master/localdomain.zone
-%config(noreplace) %{_localstatedir}/named/var/named/master/localhost.zone
-%config(noreplace) %{_localstatedir}/named/var/named/reverse/named.broadcast
-%config(noreplace) %{_localstatedir}/named/var/named/reverse/named.ip6.local
-%config(noreplace) %{_localstatedir}/named/var/named/reverse/named.local
-%config(noreplace) %{_localstatedir}/named/var/named/reverse/named.zero
-%config(noreplace) %{_localstatedir}/named/var/named/named.ca
+%config(noreplace) %{_localstatedir}/lib/named/etc/bogon_acl.conf
+%config(noreplace) %{_localstatedir}/lib/named/etc/logging.conf
+%config(noreplace) %{_localstatedir}/lib/named/etc/trusted_networks_acl.conf
+%config(noreplace) %{_localstatedir}/lib/named/etc/hosts
+%config(noreplace) %{_localstatedir}/lib/named/var/named/master/localdomain.zone
+%config(noreplace) %{_localstatedir}/lib/named/var/named/master/localhost.zone
+%config(noreplace) %{_localstatedir}/lib/named/var/named/reverse/named.broadcast
+%config(noreplace) %{_localstatedir}/lib/named/var/named/reverse/named.ip6.local
+%config(noreplace) %{_localstatedir}/lib/named/var/named/reverse/named.local
+%config(noreplace) %{_localstatedir}/lib/named/var/named/reverse/named.zero
+%config(noreplace) %{_localstatedir}/lib/named/var/named/named.ca
 
 %files devel
 %defattr(-,root,root)

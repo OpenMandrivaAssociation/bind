@@ -25,7 +25,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.5.0
-Release:	%mkrel 5
+Release:	%mkrel 6
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -110,6 +110,7 @@ BuildRequires:	libgeoip-devel
 BuildRequires:	libidn-devel
 BuildRequires:	mysql-devel
 BuildRequires:	postgresql-devel
+BuildRequires:	libcap-devel >= 2.10
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
@@ -275,11 +276,25 @@ export CFLAGS="$CFLAGS -DLDAP_DEPRECATED -DGEOIP"
 export LDFLAGS="$LDFLAGS -lGeoIP"
 %endif
 
+# threading is evil for the host command
 %configure \
     --localstatedir=/var \
     --disable-openssl-version-check \
     --disable-threads \
-    --disable-linux-caps \
+    --enable-largefile \
+    --enable-ipv6 \
+    --with-openssl=%{_includedir}/openssl \
+    --with-randomdev=/dev/urandom
+
+make -C lib
+make -C bin/dig
+make -C bin/dig DESTDIR="`pwd`" install 
+make clean
+
+%configure \
+    --localstatedir=/var \
+    --disable-openssl-version-check \
+    --enable-threads \
     --enable-largefile \
     --enable-ipv6 \
     --with-openssl=%{_includedir}/openssl \
@@ -295,23 +310,20 @@ export LDFLAGS="$LDFLAGS -lGeoIP"
 
 make
 
-# run the test suite
-#make check
-
 %if %{sdb_ldap}
 pushd zone2ldap
 # fix references to zone2ldap
 perl -pi -e "s|zone2ldap|zonetoldap|g" *
     gcc $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
     -I../lib/isc/include -I../lib/isc/unix/include -I../lib/isc/pthreads/include -c zone2ldap.c
-    gcc $CFLAGS -o zone2ldap zone2ldap.o ../lib/dns/libdns.a  -lcrypto \
+    gcc $CFLAGS -o zone2ldap zone2ldap.o ../lib/dns/libdns.a  -lcrypto -lpthread \
     ../lib/isc/libisc.a -lldap -llber -lresolv $LDFLAGS
 popd
 
 pushd ldap2zone
     gcc $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
     -I../lib/isc/include -I../lib/isc/unix/include -I../lib/isc/pthreads/include -c ldap2zone.c
-    gcc $CFLAGS -o ldap2zone ldap2zone.o ../lib/dns/libdns.a  -lcrypto \
+    gcc $CFLAGS -o ldap2zone ldap2zone.o ../lib/dns/libdns.a  -lcrypto -lpthread \
     ../lib/isc/libisc.a -lldap -llber -lresolv $LDFLAGS
 popd
 %endif
@@ -322,12 +334,16 @@ gcc $CFLAGS -I%{_includedir}/mysql -I../../../lib/dns/include -I../../../lib/dns
   -I../../../lib/isc/include -I../../../lib/isc/unix/include -I../../../lib/isc/pthreads/include \
   -c zonetodb.c
 gcc $CFLAGS -o zonetodb zonetodb.o \
-  ../../../lib/dns/libdns.a -lcrypto ../../../lib/isc/libisc.a \
+  ../../../lib/dns/libdns.a  -lcrypto -lpthread ../../../lib/isc/libisc.a \
   -lmysqlclient -lresolv $LDFLAGS
 popd
 %endif
 
 gcc $CFLAGS -o dns-keygen keygen.c
+
+%check
+# run the test suite
+make check
 
 %install
 rm -rf %{buildroot}
@@ -373,6 +389,10 @@ cp contrib/sdb/mysql/README contrib/sdb/mysql/README.mysql
 %endif
 
 install -m0755 dns-keygen %{buildroot}%{_sbindir}/dns-keygen
+
+# install the non-threaded host command
+# fixes #16855
+install -m0755 usr/bin/host %{buildroot}%{_bindir}/
 
 # make the chroot
 install -d %{buildroot}/var/lib/named/{dev,etc}

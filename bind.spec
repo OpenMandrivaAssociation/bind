@@ -2,6 +2,7 @@
 %define sdb_ldap 1
 %define sdb_mysql 0
 %define geoip 0
+%define gssapi 1
 
 %{?_with_sdb_ldap: %{expand: %%global sdb_ldap 1}}
 %{?_without_sdb_ldap: %{expand: %%global sdb_ldap 0}}
@@ -9,6 +10,8 @@
 %{?_without_sdb_mysql: %{expand: %%global sdb_mysql 0}}
 %{?_with_geoip: %{expand: %%global geoip 1}}
 %{?_without_geoip: %{expand: %%global geoip 0}}
+%{?_with_gssapi: %{expand: %%global gssapi 1}}
+%{?_without_gssapi: %{expand: %%global gssapi 0}}
 
 %if %{sdb_mysql}
 %define sdb_ldap 0
@@ -22,15 +25,19 @@
 %define geoip 1
 %endif
 
+%if %{gssapi}
+%define gssapi 1
+%endif
+
 Summary:	A DNS (Domain Name System) server
 Name:		bind
-Version:	9.5.0
-Release:	%mkrel 6
+Version:	9.6.0
+Release:	%mkrel 0.a1.1
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
-Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-P2.tar.gz
-Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-P2.tar.gz.asc
+Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}a1.tar.gz
+Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}a1.tar.gz.asc
 Source2:	bind-manpages.tar.bz2
 Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2
 Source4:	bind-named.init
@@ -63,15 +70,12 @@ Source111:	rndc.key
 Source112:	trusted_networks_acl.conf
 Patch0:		bind-fallback-to-second-server.diff
 Patch1:		bind-queryperf_fix.diff
-Patch2:		bind-9.3.0beta2-libtool.diff
 Patch100:	bind-9.2.3-sdb_ldap.patch
 Patch101:	bind-9.3.1-zone2ldap_fixes.diff
 Patch102:	bind-9.3.0rc2-sdb_mysql.patch
 Patch103:	zone2ldap-0.4-ldapv3.patch
 Patch200:	bind-9.2.0rc3-varrun.patch
-Patch201:	bind-9.3.0-handle-send-errors.patch
 Patch202:	bind-9.3.2b1-missing-dnssec-tools.diff
-Patch203:	libbind-9.3.1rc1-fix_h_errno.patch
 Patch204:	bind-9.4.0rc1-ppc-asm.patch
 Patch205:	bind-9.3.2-prctl_set_dumpable.patch
 Patch206:	bind-9.4.0-dnssec-directory.patch
@@ -111,6 +115,9 @@ BuildRequires:	libidn-devel
 BuildRequires:	mysql-devel
 BuildRequires:	postgresql-devel
 BuildRequires:	libcap-devel >= 2.10
+%if %{gssapi}
+BuildRequires:	krb5-devel
+%endif
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
@@ -181,11 +188,10 @@ The bind-devel package contains the documentation for BIND.
 
 %prep
 
-%setup -q  -n %{name}-%{version}-P2 -a2 -a3 -a12 -a13 -a14 -a15 -a16
+%setup -q  -n %{name}-%{version}a1 -a2 -a3 -a12 -a13 -a14 -a15 -a16
 
 %patch0 -p1 -b .fallback-to-second-server.droplet
 %patch1 -p0 -b .queryperf_fix.droplet
-%patch2 -p1 -b .libtool.droplet
 
 %if %{sdb_ldap}
 %__cp bind-sdb-ldap-*/ldapdb.c bin/named/
@@ -203,14 +209,12 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 %endif
 
 %patch200 -p1 -b .varrun.droplet
-#%patch201 -p1 -b .handle_send_errors
 %patch202 -p0 -b .missing_dnssec_tools.droplet
-%patch203 -p1 -b .fix_h_errno.droplet
 %patch204 -p1 -b .no-register-names.droplet
 %patch205 -p1 -b .prctl_set_dumpable.droplet
 %patch206 -p1 -b .directory.droplet
 %patch208 -p1 -b .overflow.droplet
-%patch209 -p1 -b .64bit
+%patch209 -p0 -b .64bit
 %patch210 -p1 -b .nsl
 %patch211 -p1 -b .edns.droplet
 %patch212 -p1 -b .libidn
@@ -297,7 +301,11 @@ make clean
     --enable-threads \
     --enable-largefile \
     --enable-ipv6 \
+    --enable-epoll \
     --with-openssl=%{_includedir}/openssl \
+%if %{gssapi}
+    --with-gssapi=%{_prefix} --disable-isc-spnego \
+%endif
     --with-randomdev=/dev/urandom \
     --with-libxml2=no \
     --with-dlz-postgres=yes \
@@ -308,6 +316,11 @@ make clean
     --with-dlz-odbc=no \
     --with-dlz-stub=yes
 
+# pkcs11 support requires a working backend, otherwise bind won't start
+# http://blogs.sun.com/janp/
+# http://sourceforge.net/projects/opencryptoki
+#--with-pkcs11 \
+
 make
 
 %if %{sdb_ldap}
@@ -317,14 +330,14 @@ perl -pi -e "s|zone2ldap|zonetoldap|g" *
     gcc $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
     -I../lib/isc/include -I../lib/isc/unix/include -I../lib/isc/pthreads/include -c zone2ldap.c
     gcc $CFLAGS -o zone2ldap zone2ldap.o ../lib/dns/libdns.a  -lcrypto -lpthread \
-    ../lib/isc/libisc.a -lldap -llber -lresolv $LDFLAGS
+    ../lib/isc/libisc.a -lldap -llber -lresolv %{?gssapi:-lgssapi_krb5} $LDFLAGS
 popd
 
 pushd ldap2zone
     gcc $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
     -I../lib/isc/include -I../lib/isc/unix/include -I../lib/isc/pthreads/include -c ldap2zone.c
     gcc $CFLAGS -o ldap2zone ldap2zone.o ../lib/dns/libdns.a  -lcrypto -lpthread \
-    ../lib/isc/libisc.a -lldap -llber -lresolv $LDFLAGS
+    ../lib/isc/libisc.a -lldap -llber -lresolv %{?_with_gssapi:-lgssapi_krb5} $LDFLAGS
 popd
 %endif
 
@@ -335,7 +348,7 @@ gcc $CFLAGS -I%{_includedir}/mysql -I../../../lib/dns/include -I../../../lib/dns
   -c zonetodb.c
 gcc $CFLAGS -o zonetodb zonetodb.o \
   ../../../lib/dns/libdns.a  -lcrypto -lpthread ../../../lib/isc/libisc.a \
-  -lmysqlclient -lresolv $LDFLAGS
+  -lmysqlclient -lresolv %{?_with_gssapi:-lgssapi_krb5} $LDFLAGS
 popd
 %endif
 
@@ -528,6 +541,7 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/sysconfig/named
 %{_initrddir}/named
 %{_sbindir}/dns-keygen
+%{_sbindir}/dnssec-keyfromlabel
 %{_sbindir}/dnssec-keygen
 %{_sbindir}/dnssec-makekeyset
 %{_sbindir}/dnssec-signkey
@@ -601,6 +615,7 @@ rm -rf %{buildroot}
 %{_mandir}/man1/host.1*
 %{_mandir}/man1/dig.1*
 %{_mandir}/man1/nslookup.1*
+%{_mandir}/man1/nsupdate.1*
 %{_mandir}/man1/query-loc.1*
 %if %{sdb_ldap}
 %doc zone2ldap/zone2ldap.README ldap2zone/README.ldap2zone ldap2zone/dnszone-schema.txt
@@ -608,7 +623,6 @@ rm -rf %{buildroot}
 %{_bindir}/ldap2zone
 %{_mandir}/man1/zonetoldap.1*
 %endif
-%{_mandir}/man8/nsupdate.8*
 %{_mandir}/man5/resolver.5*
 %{_mandir}/man5/resolv.5*
 

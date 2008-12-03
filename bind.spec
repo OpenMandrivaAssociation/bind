@@ -32,12 +32,12 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.6.0
-Release:	%mkrel 0.b1.1
+Release:	%mkrel 0.1.rc1.1
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
-Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}b1.tar.gz
-Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}b1.tar.gz.asc
+Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}rc1.tar.gz
+Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}rc1.tar.gz.asc
 Source2:	bind-manpages.tar.bz2
 Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2
 Source4:	bind-named.init
@@ -188,7 +188,7 @@ The bind-devel package contains the documentation for BIND.
 
 %prep
 
-%setup -q  -n %{name}-%{version}b1 -a2 -a3 -a12 -a13 -a14 -a15 -a16
+%setup -q  -n %{name}-%{version}rc1 -a2 -a3 -a12 -a13 -a14 -a15 -a16
 
 %patch0 -p1 -b .fallback-to-second-server.droplet
 %patch1 -p0 -b .queryperf_fix.droplet
@@ -208,10 +208,10 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 %patch102 -p1 -b .sdb_mysql.droplet
 %endif
 
-%patch200 -p1 -b .varrun.droplet
+%patch200 -p0 -b .varrun.droplet
 %patch202 -p0 -b .missing_dnssec_tools.droplet
 %patch204 -p1 -b .no-register-names.droplet
-%patch205 -p1 -b .prctl_set_dumpable.droplet
+%patch205 -p0 -b .prctl_set_dumpable.droplet
 %patch206 -p1 -b .directory.droplet
 %patch208 -p1 -b .overflow.droplet
 %patch209 -p0 -b .64bit
@@ -541,6 +541,7 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/sysconfig/named
 %{_initrddir}/named
 %{_sbindir}/dns-keygen
+%{_sbindir}/dnssec-dsfromkey
 %{_sbindir}/dnssec-keyfromlabel
 %{_sbindir}/dnssec-keygen
 %{_sbindir}/dnssec-makekeyset

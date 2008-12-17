@@ -32,7 +32,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.6.0
-Release:	%mkrel 0.1.rc1.1
+Release:	%mkrel 0.1.rc1.2
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -88,6 +88,7 @@ Patch213:	bind-9.5-libidn2.patch
 Patch215:	bind-9.5-libidn3.patch
 # (oe) rediffed patch originates from http://www.caraytech.com/geodns/
 Patch300:	bind-9.4.0-geoip.diff
+Patch400:	bind-9.6.0rc1-format_not_a_string_literal_and_no_format_arguments.diff
 Requires(pre): rpm-helper
 Requires(postun): rpm-helper
 Requires:	bind-utils >= %{version}-%{release}
@@ -224,6 +225,8 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 %if %{geoip}
 %patch300 -p1 -b .geoip
 %endif
+
+%patch400 -p1 -b .format_not_a_string_literal_and_no_format_arguments
 
 cp %{SOURCE4} named.init
 cp %{SOURCE6} named.sysconfig

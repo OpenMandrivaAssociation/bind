@@ -215,7 +215,7 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 %patch206 -p1 -b .directory.droplet
 %patch208 -p1 -b .overflow.droplet
 %patch209 -p0 -b .64bit
-%patch210 -p1 -b .nsl
+%patch210 -p0 -b .nsl
 %patch211 -p1 -b .edns.droplet
 %patch212 -p1 -b .libidn
 %patch213 -p1 -b .libidn2

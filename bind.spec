@@ -32,7 +32,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.6.0
-Release:	%mkrel 2
+Release:	%mkrel 3
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -113,11 +113,13 @@ Provides:	caching-nameserver
 BuildRequires:	libgeoip-devel
 %endif
 BuildRequires:	libidn-devel
+BuildRequires:	postgresql-devel
 BuildRequires:	mysql-devel
 BuildRequires:	libcap-devel >= 2.10
 %if %{gssapi}
 BuildRequires:	krb5-devel
 %endif
+BuildRequires:	libxml2-devel
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
@@ -309,8 +311,8 @@ make clean
     --with-gssapi=%{_prefix} --disable-isc-spnego \
 %endif
     --with-randomdev=/dev/urandom \
-    --with-libxml2=no \
-    --with-dlz-postgres=no \
+    --with-libxml2=yes \
+    --with-dlz-postgres=yes \
     --with-dlz-mysql=yes \
     --with-dlz-bdb=no \
     --with-dlz-filesystem=yes \
@@ -331,15 +333,15 @@ pushd zone2ldap
 perl -pi -e "s|zone2ldap|zonetoldap|g" *
     gcc $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
     -I../lib/isc/include -I../lib/isc/unix/include -I../lib/isc/pthreads/include -c zone2ldap.c
-    gcc $CFLAGS -o zone2ldap zone2ldap.o ../lib/dns/libdns.a  -lcrypto -lpthread \
-    ../lib/isc/libisc.a -lldap -llber -lresolv %{?gssapi:-lgssapi_krb5} $LDFLAGS
+    gcc $CFLAGS -o zone2ldap zone2ldap.o ../lib/dns/libdns.a -lcrypto -lpthread \
+    ../lib/isc/libisc.a -lldap -llber -lresolv %{?gssapi:-lgssapi_krb5} -lxml2 $LDFLAGS
 popd
 
 pushd ldap2zone
     gcc $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
     -I../lib/isc/include -I../lib/isc/unix/include -I../lib/isc/pthreads/include -c ldap2zone.c
-    gcc $CFLAGS -o ldap2zone ldap2zone.o ../lib/dns/libdns.a  -lcrypto -lpthread \
-    ../lib/isc/libisc.a -lldap -llber -lresolv %{?_with_gssapi:-lgssapi_krb5} $LDFLAGS
+    gcc $CFLAGS -o ldap2zone ldap2zone.o ../lib/dns/libdns.a -lcrypto -lpthread \
+    ../lib/isc/libisc.a -lldap -llber -lresolv %{?_with_gssapi:-lgssapi_krb5} -lxml2 $LDFLAGS
 popd
 %endif
 
@@ -349,8 +351,8 @@ gcc $CFLAGS -I%{_includedir}/mysql -I../../../lib/dns/include -I../../../lib/dns
   -I../../../lib/isc/include -I../../../lib/isc/unix/include -I../../../lib/isc/pthreads/include \
   -c zonetodb.c
 gcc $CFLAGS -o zonetodb zonetodb.o \
-  ../../../lib/dns/libdns.a  -lcrypto -lpthread ../../../lib/isc/libisc.a \
-  -lmysqlclient -lresolv %{?_with_gssapi:-lgssapi_krb5} $LDFLAGS
+  ../../../lib/dns/libdns.a -lcrypto -lpthread ../../../lib/isc/libisc.a \
+  -lmysqlclient -lresolv %{?_with_gssapi:-lgssapi_krb5} -lxml2 $LDFLAGS
 popd
 %endif
 

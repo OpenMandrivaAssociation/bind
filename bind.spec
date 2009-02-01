@@ -32,7 +32,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.6.0
-Release:	%mkrel 3
+Release:	%mkrel 4
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -86,6 +86,10 @@ Patch211:	bind-9.5-edns.patch
 Patch212:	bind-9.5-libidn.patch
 Patch213:	bind-9.5-libidn2.patch
 Patch215:	bind-9.5-libidn3.patch
+Patch216:	bind95-rh461409.patch
+Patch217:	bind-95-rh469440.patch
+Patch218:	bind-96-libtool2.patch
+Patch219:	bind-95-rh452060.patch
 # (oe) rediffed patch originates from http://www.caraytech.com/geodns/
 Patch300:	bind-9.4.0-geoip.diff
 Patch400:	bind-9.6.0rc1-format_not_a_string_literal_and_no_format_arguments.diff
@@ -222,6 +226,11 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 %patch212 -p1 -b .libidn
 %patch213 -p1 -b .libidn2
 %patch215 -p1 -b .libidn3
+%patch216 -p1 -b .rh461409
+%patch217 -p1 -b .rh469440
+mkdir m4
+%patch218 -p1 -b .libtool2
+%patch219 -p1 -b .rh452060
 
 %if %{geoip}
 %patch300 -p1 -b .geoip
@@ -256,7 +265,7 @@ find . -type f|xargs file|grep 'text'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
 %build
 %serverbuild
 export WANT_AUTOCONF_2_5=1
-libtoolize --copy --force; aclocal; autoconf
+libtoolize --copy --force; aclocal -I m4 --force; autoheader --force; autoconf --force
 
 # (oe) make queryperf from the contrib _before_ bind..., makes it
 # easier to determine if it builds or not, it saves time...

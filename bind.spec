@@ -32,7 +32,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.6.0
-Release:	%mkrel 4
+Release:	%mkrel 5
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -93,6 +93,7 @@ Patch219:	bind-95-rh452060.patch
 # (oe) rediffed patch originates from http://www.caraytech.com/geodns/
 Patch300:	bind-9.4.0-geoip.diff
 Patch400:	bind-9.6.0rc1-format_not_a_string_literal_and_no_format_arguments.diff
+Patch401:	bind-96-realloc.patch
 Requires(pre): rpm-helper
 Requires(postun): rpm-helper
 Requires:	bind-utils >= %{version}-%{release}
@@ -237,6 +238,7 @@ mkdir m4
 %endif
 
 %patch400 -p1 -b .format_not_a_string_literal_and_no_format_arguments
+%patch401 -p0 -b .realloc
 
 cp %{SOURCE4} named.init
 cp %{SOURCE6} named.sysconfig
@@ -264,6 +266,10 @@ find . -type f|xargs file|grep 'text'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
 
 %build
 %serverbuild
+
+export CPPFLAGS="$CPPFLAGS -DDIG_SIGCHASE"
+export STD_CDEFINES="$CPPFLAGS"
+
 export WANT_AUTOCONF_2_5=1
 libtoolize --copy --force; aclocal -I m4 --force; autoheader --force; autoconf --force
 

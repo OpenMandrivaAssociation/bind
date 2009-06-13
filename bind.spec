@@ -31,13 +31,13 @@
 
 Summary:	A DNS (Domain Name System) server
 Name:		bind
-Version:	9.6.0
-Release:	%mkrel 5
+Version:	9.6.1
+Release:	%mkrel 1
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
-Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-P1.tar.gz
-Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-P1.tar.gz.asc
+Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz
+Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz.asc
 Source2:	bind-manpages.tar.bz2
 Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2
 Source4:	bind-named.init
@@ -46,10 +46,10 @@ Source7:	bind-keygen.c
 Source11:	ftp://ftp.internic.net/domain/named.cache
 # (oe) http://mysql-bind.sourceforge.net/
 Source12:	mysql-bind-0.1.tar.bz2
-# (oe) http://www.venaas.no/ldap/bind-sdb/bind-sdb-ldap-1.0.tar.gz
+# (oe) http://bind9-ldap.bayour.com/bind-sdb-ldap-1.0.tar.gz
 Source13:	bind-sdb-ldap-1.0.tar.bz2
 # (oe) http://www.blue-giraffe.com/zone2ldap/zone2ldap-0.4.tar.gz
-Source14:	zone2ldap/zone2ldap-0.4.tar.bz2
+Source14:	zone2ldap-0.4.tar.bz2
 # (oe) http://www.venaas.no/dns/ldap2zone/
 Source15:	ldap2zone.tar.bz2
 # (oe) these tools were removed, no reason given...
@@ -81,19 +81,18 @@ Patch205:	bind-9.3.2-prctl_set_dumpable.patch
 Patch206:	bind-9.4.0-dnssec-directory.patch
 Patch208:	bind-9.5-overflow.patch
 Patch209:	bind-9.5-dlz-64bit.patch
-Patch210: 	bind-9.2.2-nsl.patch
 Patch211:	bind-9.5-edns.patch
 Patch212:	bind-9.5-libidn.patch
 Patch213:	bind-9.5-libidn2.patch
 Patch215:	bind-9.5-libidn3.patch
 Patch216:	bind95-rh461409.patch
-Patch217:	bind-95-rh469440.patch
 Patch218:	bind-96-libtool2.patch
 Patch219:	bind-95-rh452060.patch
+Patch220:	bind93-rh490837.patch
+Patch221:	bind-96-dyndb.patch
+Patch222:	bind-96-db_unregister.patch
 # (oe) rediffed patch originates from http://www.caraytech.com/geodns/
 Patch300:	bind-9.4.0-geoip.diff
-Patch400:	bind-9.6.0rc1-format_not_a_string_literal_and_no_format_arguments.diff
-Patch401:	bind-96-realloc.patch
 Requires(pre): rpm-helper
 Requires(postun): rpm-helper
 Requires:	bind-utils >= %{version}-%{release}
@@ -195,7 +194,7 @@ The bind-devel package contains the documentation for BIND.
 
 %prep
 
-%setup -q  -n %{name}-%{version}-P1 -a2 -a3 -a12 -a13 -a14 -a15 -a16
+%setup -q  -n %{name}-%{version} -a2 -a3 -a12 -a13 -a14 -a15 -a16
 
 %patch0 -p1 -b .fallback-to-second-server.droplet
 %patch1 -p0 -b .queryperf_fix.droplet
@@ -222,23 +221,22 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 %patch206 -p1 -b .directory.droplet
 %patch208 -p1 -b .overflow.droplet
 %patch209 -p0 -b .64bit
-%patch210 -p0 -b .nsl
+
 %patch211 -p1 -b .edns.droplet
 %patch212 -p1 -b .libidn
 %patch213 -p1 -b .libidn2
 %patch215 -p1 -b .libidn3
 %patch216 -p1 -b .rh461409
-%patch217 -p1 -b .rh469440
 mkdir m4
 %patch218 -p1 -b .libtool2
-%patch219 -p1 -b .rh452060
+%patch219 -p0 -b .rh452060
+%patch220 -p0 -b .rh490837
+%patch221 -p1 -b .dyndb
+%patch222 -p1 -b .db_unregister
 
 %if %{geoip}
 %patch300 -p1 -b .geoip
 %endif
-
-%patch400 -p1 -b .format_not_a_string_literal_and_no_format_arguments
-%patch401 -p0 -b .realloc
 
 cp %{SOURCE4} named.init
 cp %{SOURCE6} named.sysconfig
@@ -306,7 +304,7 @@ export LDFLAGS="$LDFLAGS -lGeoIP"
     --disable-threads \
     --enable-largefile \
     --enable-ipv6 \
-    --with-openssl=%{_includedir}/openssl \
+    --with-openssl=%{_prefix} \
     --with-randomdev=/dev/urandom
 
 make -C lib
@@ -321,7 +319,7 @@ make clean
     --enable-largefile \
     --enable-ipv6 \
     --enable-epoll \
-    --with-openssl=%{_includedir}/openssl \
+    --with-openssl=%{_prefix} \
 %if %{gssapi}
     --with-gssapi=%{_prefix} --disable-isc-spnego \
 %endif
@@ -621,6 +619,7 @@ rm -rf %{buildroot}
 %{_bindir}/isc-config.sh
 %{_includedir}/*
 %{_libdir}/*.a
+%{_mandir}/man1/isc-config.sh.1*
 %{_mandir}/man3/lwres*.3*
 
 %files utils

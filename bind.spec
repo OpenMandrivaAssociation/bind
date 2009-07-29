@@ -32,12 +32,12 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.6.1
-Release:	%mkrel 1
+Release:	%mkrel 2
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
-Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz
-Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz.asc
+Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-P1.tar.gz
+Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-P1.tar.gz.asc
 Source2:	bind-manpages.tar.bz2
 Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2
 Source4:	bind-named.init
@@ -194,7 +194,7 @@ The bind-devel package contains the documentation for BIND.
 
 %prep
 
-%setup -q  -n %{name}-%{version} -a2 -a3 -a12 -a13 -a14 -a15 -a16
+%setup -q  -n %{name}-%{version}-P1 -a2 -a3 -a12 -a13 -a14 -a15 -a16
 
 %patch0 -p1 -b .fallback-to-second-server.droplet
 %patch1 -p0 -b .queryperf_fix.droplet

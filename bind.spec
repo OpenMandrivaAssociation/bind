@@ -31,13 +31,13 @@
 
 Summary:	A DNS (Domain Name System) server
 Name:		bind
-Version:	9.6.1
-Release:	%mkrel 7
+Version:	9.7.0
+Release:	%mkrel 1
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
-Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-P3.tar.gz
-Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-P3.tar.gz.asc
+Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz
+Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz.asc
 Source2:	bind-manpages.tar.bz2
 Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2
 Source4:	bind-named.init
@@ -52,8 +52,6 @@ Source13:	bind-sdb-ldap-1.0.tar.bz2
 Source14:	zone2ldap-0.4.tar.bz2
 # (oe) http://www.venaas.no/dns/ldap2zone/
 Source15:	ldap2zone.tar.bz2
-# (oe) these tools were removed, no reason given...
-Source16:	bind-9.3.1-missing_tools.tar.gz
 # caching-nameserver files (S100-S112)
 Source100:	bogon_acl.conf
 Source101:	hosts
@@ -75,13 +73,10 @@ Patch101:	bind-9.3.1-zone2ldap_fixes.diff
 Patch102:	bind-9.3.0rc2-sdb_mysql.patch
 Patch103:	zone2ldap-0.4-ldapv3.patch
 Patch200:	bind-9.2.0rc3-varrun.patch
-Patch202:	bind-9.3.2b1-missing-dnssec-tools.diff
 Patch204:	bind-9.4.0rc1-ppc-asm.patch
 Patch205:	bind-9.3.2-prctl_set_dumpable.patch
-Patch206:	bind-9.4.0-dnssec-directory.patch
 Patch208:	bind-9.5-overflow.patch
 Patch209:	bind-9.5-dlz-64bit.patch
-Patch211:	bind-9.5-edns.patch
 Patch212:	bind-9.5-libidn.patch
 Patch213:	bind-9.5-libidn2.patch
 Patch215:	bind-9.5-libidn3.patch
@@ -90,7 +85,6 @@ Patch218:	bind-96-libtool2.patch
 Patch219:	bind-95-rh452060.patch
 Patch220:	bind93-rh490837.patch
 Patch221:	bind-96-dyndb.patch
-Patch222:	bind-96-db_unregister.patch
 # (oe) rediffed patch originates from http://www.caraytech.com/geodns/
 Patch300:	bind-9.4.0-geoip.diff
 Requires(pre): rpm-helper
@@ -194,7 +188,7 @@ The bind-devel package contains the documentation for BIND.
 
 %prep
 
-%setup -q  -n %{name}-%{version}-P3 -a2 -a3 -a12 -a13 -a14 -a15 -a16
+%setup -q  -n %{name}-%{version} -a2 -a3 -a12 -a13 -a14 -a15
 
 %patch0 -p1 -b .fallback-to-second-server.droplet
 %patch1 -p0 -b .queryperf_fix.droplet
@@ -215,24 +209,20 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 %endif
 
 %patch200 -p0 -b .varrun.droplet
-%patch202 -p0 -b .missing_dnssec_tools.droplet
-%patch204 -p1 -b .no-register-names.droplet
+%patch204 -p0 -b .no-register-names.droplet
 %patch205 -p0 -b .prctl_set_dumpable.droplet
-%patch206 -p1 -b .directory.droplet
 %patch208 -p1 -b .overflow.droplet
 %patch209 -p0 -b .64bit
 
-%patch211 -p1 -b .edns.droplet
 %patch212 -p1 -b .libidn
 %patch213 -p1 -b .libidn2
 %patch215 -p1 -b .libidn3
 %patch216 -p1 -b .rh461409
-mkdir m4
+mkdir -p m4
 %patch218 -p1 -b .libtool2
 %patch219 -p0 -b .rh452060
 %patch220 -p0 -b .rh490837
 %patch221 -p1 -b .dyndb
-%patch222 -p1 -b .db_unregister
 
 %if %{geoip}
 %patch300 -p1 -b .geoip
@@ -371,9 +361,9 @@ popd
 
 gcc $CFLAGS -o dns-keygen keygen.c
 
-%check
-# run the test suite
-make check
+#%%check
+## run the test suite
+#make check
 
 %install
 rm -rf %{buildroot}
@@ -455,6 +445,8 @@ install -m 644 \
 ln -s /var/lib/named/etc/named.conf %{buildroot}%{_sysconfdir}/named.conf
 ln -s /var/lib/named/etc/rndc.conf %{buildroot}%{_sysconfdir}/rndc.conf
 ln -s /var/lib/named/etc/rndc.key %{buildroot}%{_sysconfdir}/rndc.key
+mv %{buildroot}%{_sysconfdir}/bind.keys %{buildroot}/var/lib/named/etc/
+ln -s /var/lib/named/etc/bind.keys %{buildroot}%{_sysconfdir}/bind.keys
 
 echo "; Use \"dig @A.ROOT-SERVERS.NET . ns\" to update this file if it's outdated." > named.cache.tmp
 cat named.cache >> named.cache.tmp
@@ -557,29 +549,40 @@ rm -rf %{buildroot}
 %endif
 %config(noreplace) %{_sysconfdir}/sysconfig/named
 %{_initrddir}/named
+%{_sbindir}/arpaname
+%{_sbindir}/ddns-confgen
 %{_sbindir}/dns-keygen
 %{_sbindir}/dnssec-dsfromkey
 %{_sbindir}/dnssec-keyfromlabel
 %{_sbindir}/dnssec-keygen
-%{_sbindir}/dnssec-makekeyset
-%{_sbindir}/dnssec-signkey
+%{_sbindir}/dnssec-revoke
+%{_sbindir}/dnssec-settime
 %{_sbindir}/dnssec-signzone
+%{_sbindir}/genrandom
+%{_sbindir}/isc-hmac-fixup
 %{_sbindir}/lwresd
 %{_sbindir}/named
 %{_sbindir}/named-bootconf
 %{_sbindir}/named-checkconf
 %{_sbindir}/named-checkzone
 %{_sbindir}/named-compilezone
+%{_sbindir}/named-journalprint
+%{_sbindir}/nsec3hash
 %{_sbindir}/rndc
 %{_sbindir}/rndc-confgen
-%{_mandir}/man5/rndc.conf.5*
+%{_mandir}/man1/arpaname.1.*
 %{_mandir}/man5/named.conf.5*
-%{_mandir}/man8/rndc.8*
-%{_mandir}/man8/rndc-confgen.8*
-%{_mandir}/man8/named.8*
+%{_mandir}/man5/rndc.conf.5*
+%{_mandir}/man8/ddns-confgen.8.*
 %{_mandir}/man8/dnssec-*.8*
+%{_mandir}/man8/genrandom.8.*
+%{_mandir}/man8/isc-hmac-fixup.8.*
 %{_mandir}/man8/lwresd.8*
 %{_mandir}/man8/named-*.8*
+%{_mandir}/man8/named.8*
+%{_mandir}/man8/nsec3hash.8.*
+%{_mandir}/man8/rndc.8*
+%{_mandir}/man8/rndc-confgen.8*
 # the chroot
 %dir /var/lib/named
 %dir /var/lib/named/dev
@@ -593,8 +596,10 @@ rm -rf %{buildroot}
 %attr(-,named,named) %dir /var/lib/named/var/named/slaves
 %attr(-,named,named) %dir /var/lib/named/var/named/reverse
 %config(noreplace) /var/lib/named/etc/named.conf
+%attr(-,root,named) %config(noreplace) /var/lib/named/etc/bind.keys
 %attr(-,root,named) %config(noreplace) /var/lib/named/etc/rndc.conf
 %attr(-,root,named) %config(noreplace) /var/lib/named/etc/rndc.key
+%{_sysconfdir}/bind.keys
 %{_sysconfdir}/named.conf
 %{_sysconfdir}/rndc.conf
 %{_sysconfdir}/rndc.key

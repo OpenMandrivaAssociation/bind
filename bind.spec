@@ -32,7 +32,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.7.2
-Release:	%mkrel 6
+Release:	%mkrel 7
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -92,7 +92,7 @@ Requires(postun): rpm-helper
 Requires:	bind-utils >= %{version}-%{release}
 BuildRequires:	openssl-devel
 BuildRequires:	autoconf2.5
-BuildRequires:	automake1.7
+BuildRequires:	automake
 BuildRequires:  file
 %if %{sdb_mysql}
 BuildRequires:	mysql-devel

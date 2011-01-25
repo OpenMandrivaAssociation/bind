@@ -32,7 +32,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.7.2
-Release:	%mkrel 7
+Release:	%mkrel 8
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -66,6 +66,7 @@ Source109:	named.zero
 Source110:	rndc.conf
 Source111:	rndc.key
 Source112:	trusted_networks_acl.conf
+Source113:	named.iscdlv.key
 Patch0:		bind-fallback-to-second-server.diff
 Patch1:		bind-queryperf_fix.diff
 Patch100:	bind-9.2.3-sdb_ldap.patch
@@ -247,6 +248,7 @@ cp %{SOURCE109} caching-nameserver/named.zero
 cp %{SOURCE110} caching-nameserver/rndc.conf
 cp %{SOURCE111} caching-nameserver/rndc.key
 cp %{SOURCE112} caching-nameserver/trusted_networks_acl.conf
+cp %{SOURCE113} caching-nameserver/named.iscdlv.key
 
 # strip away annoying ^M
 find . -type f|xargs file|grep 'CRLF'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
@@ -393,7 +395,6 @@ cp contrib/query-loc-*/ALGO ALGO.query-loc
 cp contrib/query-loc-*/README README.query-loc
 cp contrib/query-loc-*/USAGE USAGE.query-loc
 
-
 install -m0755 named.init %{buildroot}%{_initrddir}/named
 install -m0644 named.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/named
 
@@ -418,7 +419,7 @@ install -m0755 usr/bin/host %{buildroot}%{_bindir}/
 # make the chroot
 install -d %{buildroot}/var/lib/named/{dev,etc}
 install -d %{buildroot}/var/lib/named/var/{log,run,tmp}
-install -d %{buildroot}/var/lib/named/var/named/{master,slaves,reverse}
+install -d %{buildroot}/var/lib/named/var/named/{master,slaves,reverse,dynamic}
 
 install -m 644 \
     caching-nameserver/named.conf \
@@ -430,6 +431,7 @@ install -m 644 \
 install -m 640 \
     caching-nameserver/rndc.conf\
     caching-nameserver/rndc.key \
+    caching-nameserver/named.iscdlv.key \
     %{buildroot}/var/lib/named/etc
 install -m 644 \
     caching-nameserver/localdomain.zone \
@@ -446,6 +448,7 @@ install -m 644 \
 ln -s /var/lib/named/etc/named.conf %{buildroot}%{_sysconfdir}/named.conf
 ln -s /var/lib/named/etc/rndc.conf %{buildroot}%{_sysconfdir}/rndc.conf
 ln -s /var/lib/named/etc/rndc.key %{buildroot}%{_sysconfdir}/rndc.key
+ln -s /var/lib/named/etc/named.iscdlv.key %{buildroot}%{_sysconfdir}/named.iscdlv.key
 mv %{buildroot}%{_sysconfdir}/bind.keys %{buildroot}/var/lib/named/etc/
 ln -s /var/lib/named/etc/bind.keys %{buildroot}%{_sysconfdir}/bind.keys
 
@@ -465,9 +468,7 @@ popd
 install -d doc/html
 cp -f `find . -type f |grep html |sed -e 's#\/%{name}-%{version}##'|grep -v contrib` doc/html 
 
-%if %mdkversion >= 1020
 %multiarch_binaries %{buildroot}%{_bindir}/isc-config.sh
-%endif
 
 cat > README.urpmi << EOF
 The most significant changes starting from the bind-9.3.2-5mdk package:
@@ -529,9 +530,6 @@ fi
 
 %postun
 %_postun_userdel named
-
-%triggerpostun -- bind < 8.2.2_P5-15
-/sbin/chkconfig --add named
 
 %clean
 rm -rf %{buildroot}
@@ -596,14 +594,17 @@ rm -rf %{buildroot}
 %attr(-,named,named) %dir /var/lib/named/var/named/master
 %attr(-,named,named) %dir /var/lib/named/var/named/slaves
 %attr(-,named,named) %dir /var/lib/named/var/named/reverse
+%attr(-,named,named) %dir /var/lib/named/var/named/dynamic
 %config(noreplace) /var/lib/named/etc/named.conf
 %attr(-,root,named) %config(noreplace) /var/lib/named/etc/bind.keys
 %attr(-,root,named) %config(noreplace) /var/lib/named/etc/rndc.conf
 %attr(-,root,named) %config(noreplace) /var/lib/named/etc/rndc.key
+%attr(-,root,named) %config(noreplace) /var/lib/named/etc/named.iscdlv.key
 %{_sysconfdir}/bind.keys
 %{_sysconfdir}/named.conf
 %{_sysconfdir}/rndc.conf
 %{_sysconfdir}/rndc.key
+%{_sysconfdir}/named.iscdlv.key
 %config(noreplace) /var/lib/named/etc/bogon_acl.conf
 %config(noreplace) /var/lib/named/etc/logging.conf
 %config(noreplace) /var/lib/named/etc/trusted_networks_acl.conf
@@ -619,9 +620,7 @@ rm -rf %{buildroot}
 %files devel
 %defattr(-,root,root)
 %doc CHANGES README
-%if %mdkversion >= 1020
 %multiarch %{multiarch_bindir}/isc-config.sh
-%endif
 %{_bindir}/isc-config.sh
 %{_includedir}/*
 %{_libdir}/*.a

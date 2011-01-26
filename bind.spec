@@ -1,15 +1,12 @@
 # default options
 %define sdb_ldap 1
 %define sdb_mysql 0
-%define geoip 0
 %define gssapi 1
 
 %{?_with_sdb_ldap: %{expand: %%global sdb_ldap 1}}
 %{?_without_sdb_ldap: %{expand: %%global sdb_ldap 0}}
 %{?_with_sdb_mysql: %{expand: %%global sdb_mysql 1}}
 %{?_without_sdb_mysql: %{expand: %%global sdb_mysql 0}}
-%{?_with_geoip: %{expand: %%global geoip 1}}
-%{?_without_geoip: %{expand: %%global geoip 0}}
 %{?_with_gssapi: %{expand: %%global gssapi 1}}
 %{?_without_gssapi: %{expand: %%global gssapi 0}}
 
@@ -21,10 +18,6 @@
 %define sdb_mysql 0
 %endif
 
-%if %{geoip}
-%define geoip 1
-%endif
-
 %if %{gssapi}
 %define gssapi 1
 %endif
@@ -32,7 +25,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.7.2
-Release:	%mkrel 8
+Release:	%mkrel 9
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -86,8 +79,6 @@ Patch218:	bind-96-libtool2.patch
 Patch219:	bind-95-rh452060.patch
 Patch220:	bind93-rh490837.patch
 Patch221:	bind-96-dyndb.patch
-# (oe) rediffed patch originates from http://www.caraytech.com/geodns/
-Patch300:	bind-9.4.0-geoip.diff
 Requires(pre): rpm-helper
 Requires(postun): rpm-helper
 Requires:	bind-utils >= %{version}-%{release}
@@ -103,14 +94,9 @@ BuildRequires:	openldap-devel
 %endif
 Obsoletes:	libdns0
 Provides:	libdns0
-%if %mdkversion >= 1020
 BuildRequires:	multiarch-utils >= 1.0.3
-%endif
 Obsoletes:	caching-nameserver
 Provides:	caching-nameserver
-%if %{geoip}
-BuildRequires:	libgeoip-devel
-%endif
 BuildRequires:	libidn-devel
 BuildRequires:	postgresql-devel
 BuildRequires:	mysql-devel
@@ -155,8 +141,6 @@ Build Options:
                       per default)
 --with sdb_mysql      Build with MySQL database support (disables ldap
                       support, it's either way.)
---with geoip          Build with GeoIP support (disabled per default)
-
 %package	utils
 Summary:	Utilities for querying DNS name servers
 Group:		Networking/Other
@@ -225,10 +209,6 @@ mkdir -p m4
 %patch220 -p0 -b .rh490837
 %patch221 -p1 -b .dyndb
 
-%if %{geoip}
-%patch300 -p1 -b .geoip
-%endif
-
 cp %{SOURCE4} named.init
 cp %{SOURCE6} named.sysconfig
 cp %{SOURCE7} keygen.c
@@ -283,11 +263,6 @@ autoconf
 popd
 
 export CFLAGS="$CFLAGS -DLDAP_DEPRECATED"
-
-%if %{geoip}
-export CFLAGS="$CFLAGS -DLDAP_DEPRECATED -DGEOIP"
-export LDFLAGS="$LDFLAGS -lGeoIP"
-%endif
 
 # threading is evil for the host command
 %configure \
@@ -419,7 +394,7 @@ install -m0755 usr/bin/host %{buildroot}%{_bindir}/
 # make the chroot
 install -d %{buildroot}/var/lib/named/{dev,etc}
 install -d %{buildroot}/var/lib/named/var/{log,run,tmp}
-install -d %{buildroot}/var/lib/named/var/named/{master,slaves,reverse,dynamic}
+install -d %{buildroot}/var/lib/named/var/named/{master,slaves,reverse,dynamic,data}
 
 install -m 644 \
     caching-nameserver/named.conf \
@@ -543,9 +518,6 @@ rm -rf %{buildroot}
 %if %{sdb_mysql}
 %doc contrib/sdb/mysql/ChangeLog.mysql contrib/sdb/mysql/README.mysql
 %endif
-%if %{geoip}
-%doc geodns.INSTALL geodns.named.conf-sample
-%endif
 %config(noreplace) %{_sysconfdir}/sysconfig/named
 %{_initrddir}/named
 %{_sbindir}/arpaname
@@ -595,6 +567,7 @@ rm -rf %{buildroot}
 %attr(-,named,named) %dir /var/lib/named/var/named/slaves
 %attr(-,named,named) %dir /var/lib/named/var/named/reverse
 %attr(-,named,named) %dir /var/lib/named/var/named/dynamic
+%attr(-,named,named) %dir /var/lib/named/var/named/data
 %config(noreplace) /var/lib/named/etc/named.conf
 %attr(-,root,named) %config(noreplace) /var/lib/named/etc/bind.keys
 %attr(-,root,named) %config(noreplace) /var/lib/named/etc/rndc.conf

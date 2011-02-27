@@ -62,6 +62,7 @@ Source112:	trusted_networks_acl.conf
 Source113:	named.iscdlv.key
 Patch0:		bind-fallback-to-second-server.diff
 Patch1:		bind-queryperf_fix.diff
+Patch2:		bind-9.7.3-link.patch
 Patch100:	bind-9.2.3-sdb_ldap.patch
 Patch101:	bind-9.3.1-zone2ldap_fixes.diff
 Patch102:	bind-9.3.0rc2-sdb_mysql.patch
@@ -177,6 +178,7 @@ The bind-devel package contains the documentation for BIND.
 
 %patch0 -p1 -b .fallback-to-second-server.droplet
 %patch1 -p0 -b .queryperf_fix.droplet
+%patch2 -p0 -b .link
 
 %if %{sdb_ldap}
 %__cp bind-sdb-ldap-*/ldapdb.c bin/named/
@@ -265,7 +267,7 @@ popd
 export CFLAGS="$CFLAGS -DLDAP_DEPRECATED"
 
 # threading is evil for the host command
-%configure \
+%configure2_5x \
     --localstatedir=/var \
     --disable-openssl-version-check \
     --disable-threads \
@@ -279,7 +281,7 @@ make -C bin/dig
 make -C bin/dig DESTDIR="`pwd`" install 
 make clean
 
-%configure \
+%configure2_5x \
     --localstatedir=/var \
     --disable-openssl-version-check \
     --enable-threads \
@@ -314,15 +316,15 @@ pushd zone2ldap
 perl -pi -e "s|zone2ldap|zonetoldap|g" *
     gcc $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
     -I../lib/isc/include -I../lib/isc/unix/include -I../lib/isc/pthreads/include -c zone2ldap.c
-    gcc $CFLAGS -o zone2ldap zone2ldap.o ../lib/dns/libdns.a -lcrypto -lpthread \
-    ../lib/isc/libisc.a -lldap -llber -lresolv %{?gssapi:-lgssapi_krb5} -lxml2 $LDFLAGS
+    gcc $CFLAGS $LDFLAGS -o zone2ldap zone2ldap.o ../lib/dns/libdns.a -lcrypto -lpthread \
+    ../lib/isc/libisc.a -lldap -llber -lresolv %{?gssapi:`krb5-config --libs gssapi`} -lxml2
 popd
 
 pushd ldap2zone
     gcc $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
     -I../lib/isc/include -I../lib/isc/unix/include -I../lib/isc/pthreads/include -c ldap2zone.c
-    gcc $CFLAGS -o ldap2zone ldap2zone.o ../lib/dns/libdns.a -lcrypto -lpthread \
-    ../lib/isc/libisc.a -lldap -llber -lresolv %{?_with_gssapi:-lgssapi_krb5} -lxml2 $LDFLAGS
+    gcc $CFLAGS $LDFLAGS -o ldap2zone ldap2zone.o ../lib/dns/libdns.a -lcrypto -lpthread \
+    ../lib/isc/libisc.a -lldap -llber -lresolv %{?_with_gssapi:`krb5-config --libs gssapi`} -lxml2
 popd
 %endif
 
@@ -331,9 +333,9 @@ pushd contrib/sdb/mysql
 gcc $CFLAGS -I%{_includedir}/mysql -I../../../lib/dns/include -I../../../lib/dns/sec/dst/include \
   -I../../../lib/isc/include -I../../../lib/isc/unix/include -I../../../lib/isc/pthreads/include \
   -c zonetodb.c
-gcc $CFLAGS -o zonetodb zonetodb.o \
+gcc $CFLAGS $LDFLAGS -o zonetodb zonetodb.o \
   ../../../lib/dns/libdns.a -lcrypto -lpthread ../../../lib/isc/libisc.a \
-  -lmysqlclient -lresolv %{?_with_gssapi:-lgssapi_krb5} -lxml2 $LDFLAGS
+  -lmysqlclient -lresolv %{?_with_gssapi:`krb5-config --libs gssapi`} -lxml2
 popd
 %endif
 

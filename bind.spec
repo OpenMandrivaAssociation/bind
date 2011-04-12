@@ -25,7 +25,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.8.0
-Release:	%mkrel 2
+Release:	%mkrel 3
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -80,6 +80,10 @@ Patch218:	bind-96-libtool2.patch
 Patch219:	bind-95-rh452060.patch
 Patch220:	bind93-rh490837.patch
 Patch221:	bind-96-dyndb.patch
+Patch222:	bind97-rh478718.patch
+Patch223:	bind97-rh570851.patch
+Patch224:	bind97-rh645544.patch
+Patch225:	bind97-rh674334.patch
 Requires(pre): rpm-helper
 Requires(postun): rpm-helper
 Requires:	bind-utils >= %{version}-%{release}
@@ -210,8 +214,17 @@ mkdir -p m4
 %patch219 -p0 -b .rh452060
 %patch220 -p0 -b .rh490837
 %patch221 -p1 -b .dyndb
+%patch222 -p1 -b .rh478718
+%patch223 -p1 -b .rh570851
+%patch224 -p1 -b .rh645544
+%patch225 -p1 -b .rh674334
 
 cp %{SOURCE4} named.init
+# fix https://qa.mandriva.com/show_bug.cgi?id=62829
+# so..., libgost.so needs to be in the chroot (ugly..., and will break backporting, well...)
+OPENSSL_ENGINESDIR=`grep '^#define ENGINESDIR' %{multiarch_includedir}/openssl/opensslconf.h | cut -d\" -f2 | sed -e 's/^\///'`
+perl -pi -e "s|_OPENSSL_ENGINESDIR_|$OPENSSL_ENGINESDIR|g" named.init
+
 cp %{SOURCE6} named.sysconfig
 cp %{SOURCE7} keygen.c
 cp %{SOURCE11} named.cache

@@ -113,6 +113,7 @@ BuildRequires:	libcap-devel >= 2.10
 BuildRequires:	krb5-devel
 %endif
 BuildRequires:	libxml2-devel
+BuildRequires:	libgeoip-devel
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description

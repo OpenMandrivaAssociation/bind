@@ -1,3 +1,5 @@
+%define Werror_cflags -Wformat
+
 # default options
 %define sdb_ldap 1
 %define sdb_mysql 0
@@ -25,7 +27,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.8.0
-Release:	%mkrel 3
+Release:	%mkrel 4
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -63,6 +65,7 @@ Source113:	named.iscdlv.key
 Patch0:		bind-fallback-to-second-server.diff
 Patch1:		bind-queryperf_fix.diff
 Patch2:		bind-9.7.3-link.patch
+Patch3:		bind-9.8.0-geoip-1.3.patch
 Patch100:	bind-9.2.3-sdb_ldap.patch
 Patch101:	bind-9.3.1-zone2ldap_fixes.diff
 Patch102:	bind-9.3.0rc2-sdb_mysql.patch
@@ -183,6 +186,7 @@ The bind-devel package contains the documentation for BIND.
 %patch0 -p1 -b .fallback-to-second-server.droplet
 %patch1 -p0 -b .queryperf_fix.droplet
 %patch2 -p0 -b .link
+%patch3 -p0 -b .geoip
 
 %if %{sdb_ldap}
 %__cp bind-sdb-ldap-*/ldapdb.c bin/named/
@@ -249,6 +253,7 @@ cp %{SOURCE113} caching-nameserver/named.iscdlv.key
 find . -type f|xargs file|grep 'CRLF'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
 find . -type f|xargs file|grep 'text'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
 
+
 %build
 %serverbuild
 
@@ -264,6 +269,7 @@ pushd contrib/queryperf
 export WANT_AUTOCONF_2_5=1
 rm -f configure
 autoconf
+
 %configure2_5x
 %make CFLAGS="$CFLAGS"
 popd
@@ -287,7 +293,8 @@ export CFLAGS="$CFLAGS -DLDAP_DEPRECATED"
     --enable-largefile \
     --enable-ipv6 \
     --with-openssl=%{_prefix} \
-    --with-randomdev=/dev/urandom
+    --with-randomdev=/dev/urandom \
+    --with-geoip
 
 make -C lib
 make -C bin/dig
@@ -314,7 +321,8 @@ make clean
     --with-dlz-filesystem=yes \
     --with-dlz-ldap=yes \
     --with-dlz-odbc=no \
-    --with-dlz-stub=yes
+    --with-dlz-stub=yes \
+    --with-geoip
 
 # pkcs11 support requires a working backend, otherwise bind won't start
 # http://blogs.sun.com/janp/
@@ -330,14 +338,14 @@ perl -pi -e "s|zone2ldap|zonetoldap|g" *
     gcc $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
     -I../lib/isc/include -I../lib/isc/unix/include -I../lib/isc/pthreads/include -c zone2ldap.c
     gcc $CFLAGS $LDFLAGS -o zone2ldap zone2ldap.o ../lib/dns/libdns.a -lcrypto -lpthread \
-    ../lib/isc/libisc.a -lldap -llber -lresolv %{?gssapi:`krb5-config --libs gssapi`} -lxml2
+    ../lib/isc/libisc.a -lldap -llber -lresolv %{?gssapi:`krb5-config --libs gssapi`} -lxml2 -lGeoIP
 popd
 
 pushd ldap2zone
     gcc $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
     -I../lib/isc/include -I../lib/isc/unix/include -I../lib/isc/pthreads/include -c ldap2zone.c
     gcc $CFLAGS $LDFLAGS -o ldap2zone ldap2zone.o ../lib/dns/libdns.a -lcrypto -lpthread \
-    ../lib/isc/libisc.a -lldap -llber -lresolv %{?_with_gssapi:`krb5-config --libs gssapi`} -lxml2
+    ../lib/isc/libisc.a -lldap -llber -lresolv %{?_with_gssapi:`krb5-config --libs gssapi`} -lxml2 -lGeoIP
 popd
 %endif
 
@@ -348,7 +356,7 @@ gcc $CFLAGS -I%{_includedir}/mysql -I../../../lib/dns/include -I../../../lib/dns
   -c zonetodb.c
 gcc $CFLAGS $LDFLAGS -o zonetodb zonetodb.o \
   ../../../lib/dns/libdns.a -lcrypto -lpthread ../../../lib/isc/libisc.a \
-  -lmysqlclient -lresolv %{?_with_gssapi:`krb5-config --libs gssapi`} -lxml2
+  -lmysqlclient -lresolv %{?_with_gssapi:`krb5-config --libs gssapi`} -lxml2 -lGeoIP
 popd
 %endif
 

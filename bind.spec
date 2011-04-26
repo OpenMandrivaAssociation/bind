@@ -467,7 +467,7 @@ popd
 install -d doc/html
 cp -f `find . -type f |grep html |sed -e 's#\/%{name}-%{version}##'|grep -v contrib` doc/html 
 
-%multiarch_binaries %{buildroot}%{_bindir}/isc-config.sh
+#multiarch_binaries %{buildroot}%{_bindir}/isc-config.sh
 
 cat > README.urpmi << EOF
 The most significant changes starting from the bind-9.3.2-5mdk package:

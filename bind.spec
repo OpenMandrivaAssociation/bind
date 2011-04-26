@@ -617,7 +617,7 @@ rm -rf %{buildroot}
 %files devel
 %defattr(-,root,root)
 %doc CHANGES README
-%multiarch %{multiarch_bindir}/isc-config.sh
+#multiarch %{multiarch_bindir}/isc-config.sh
 %{_bindir}/isc-config.sh
 %{_includedir}/*
 %{_libdir}/*.a

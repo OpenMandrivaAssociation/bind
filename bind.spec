@@ -27,7 +27,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.8.0
-Release:	%mkrel 4
+Release:	%mkrel 5
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -102,7 +102,6 @@ BuildRequires:	openldap-devel
 %endif
 Obsoletes:	libdns0
 Provides:	libdns0
-BuildRequires:	multiarch-utils >= 1.0.3
 Obsoletes:	caching-nameserver
 Provides:	caching-nameserver
 BuildRequires:	libidn-devel
@@ -467,8 +466,6 @@ popd
 install -d doc/html
 cp -f `find . -type f |grep html |sed -e 's#\/%{name}-%{version}##'|grep -v contrib` doc/html 
 
-#multiarch_binaries %{buildroot}%{_bindir}/isc-config.sh
-
 cat > README.urpmi << EOF
 The most significant changes starting from the bind-9.3.2-5mdk package:
 
@@ -617,7 +614,6 @@ rm -rf %{buildroot}
 %files devel
 %defattr(-,root,root)
 %doc CHANGES README
-#multiarch %{multiarch_bindir}/isc-config.sh
 %{_bindir}/isc-config.sh
 %{_includedir}/*
 %{_libdir}/*.a

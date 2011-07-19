@@ -1,6 +1,6 @@
 %define Werror_cflags -Wformat
 
-%define plevel P2
+%define plevel P4
 
 # default options
 %define sdb_ldap 1
@@ -29,7 +29,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.8.0
-Release:	%mkrel 6.%{plevel}.2
+Release:	%mkrel 0.0.%{plevel}.1
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -115,6 +115,7 @@ BuildRequires:	krb5-devel
 %endif
 BuildRequires:	libxml2-devel
 BuildRequires:	libgeoip-devel
+Epoch:		1
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description

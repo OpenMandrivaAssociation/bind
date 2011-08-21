@@ -29,7 +29,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.8.0
-Release:	%mkrel 0.0.%{plevel}.1
+Release:	%mkrel 0.0.%{plevel}.2
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -480,6 +480,9 @@ The most significant changes starting from the bind-9.3.2-5mdk package:
    /var/lib/named/etc/trusted_networks_acl.conf file.
 EOF
 
+# this is just sick...
+touch %{buildroot}/var/lib/named/var/named/dynamic/managed-keys.bind
+
 %pre
 %_pre_useradd named /var/lib/named /bin/false
 
@@ -597,6 +600,7 @@ rm -rf %{buildroot}
 %attr(-,root,named) %config(noreplace) /var/lib/named/etc/rndc.conf
 %attr(-,root,named) %config(noreplace) /var/lib/named/etc/rndc.key
 %attr(-,root,named) %config(noreplace) /var/lib/named/etc/named.iscdlv.key
+%attr(-,named,named) /var/lib/named/var/named/dynamic/managed-keys.bind
 %{_sysconfdir}/bind.keys
 %{_sysconfdir}/named.conf
 %{_sysconfdir}/rndc.conf

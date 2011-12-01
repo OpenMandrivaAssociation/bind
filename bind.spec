@@ -28,8 +28,9 @@
 
 Summary:	A DNS (Domain Name System) server
 Name:		bind
+Epoch:		1
 Version:	9.8.1
-Release:	%mkrel 0.0.%{plevel}.1
+Release:	0.0.%{plevel}.2
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
@@ -89,9 +90,7 @@ Patch221:	bind-96-dyndb.patch
 Patch222:	bind97-rh478718.patch
 Patch223:	bind97-rh570851.patch
 Patch224:	bind97-rh645544.patch
-Requires(pre): rpm-helper
-Requires(postun): rpm-helper
-Requires:	bind-utils >= %{version}-%{release}
+
 BuildRequires:	openssl-devel
 BuildRequires:	autoconf2.5
 BuildRequires:	automake
@@ -102,10 +101,6 @@ BuildRequires:	mysql-devel
 %if %{sdb_ldap}
 BuildRequires:	openldap-devel
 %endif
-Obsoletes:	libdns0
-Provides:	libdns0
-Obsoletes:	caching-nameserver
-Provides:	caching-nameserver
 BuildRequires:	libidn-devel
 BuildRequires:	postgresql-devel
 BuildRequires:	mysql-devel
@@ -115,8 +110,12 @@ BuildRequires:	krb5-devel
 %endif
 BuildRequires:	libxml2-devel
 BuildRequires:	libgeoip-devel
-Epoch:		1
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
+
+Requires(pre): rpm-helper
+Requires(postun): rpm-helper
+Requires:	bind-utils >= %{version}-%{release}
+# takes care of MDV Bug #: 62829
+Requires:	openssl-engines
 
 %description
 BIND (Berkeley Internet Name Domain) is an implementation of the DNS
@@ -532,11 +531,7 @@ fi
 %postun
 %_postun_userdel named
 
-%clean
-rm -rf %{buildroot}
-
 %files
-%defattr(-,root,root)
 %doc CHANGES README FAQ COPYRIGHT README.urpmi
 %if %{sdb_ldap}
 %doc contrib/sdb/ldap/README.ldap contrib/sdb/ldap/INSTALL.ldap
@@ -618,7 +613,6 @@ rm -rf %{buildroot}
 %config(noreplace) /var/lib/named/var/named/named.ca
 
 %files devel
-%defattr(-,root,root)
 %doc CHANGES README
 %{_bindir}/isc-config.sh
 %{_includedir}/*
@@ -627,7 +621,6 @@ rm -rf %{buildroot}
 %{_mandir}/man3/lwres*.3*
 
 %files utils
-%defattr(-,root,root)
 %doc README COPYRIGHT *.query-loc *.queryperf
 %{_bindir}/dig
 %{_bindir}/host
@@ -650,6 +643,5 @@ rm -rf %{buildroot}
 %{_mandir}/man5/resolv.5*
 
 %files doc
-%defattr(-,root,root)
 %doc doc/draft doc/html doc/rfc doc/misc/
 %doc doc/dhcp-dynamic-dns-examples doc/chroot doc/trustix

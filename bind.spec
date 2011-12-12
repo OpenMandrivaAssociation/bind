@@ -257,6 +257,9 @@ find . -type f|xargs file|grep 'text'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
 
 %build
 %serverbuild
+# it does not work with -fPIE and someone added that to the serverbuild macro...
+CFLAGS=`echo $CFLAGS|sed -e 's|-fPIE||g'`
+CXXFLAGS=`echo $CXXFLAGS|sed -e 's|-fPIE||g'
 
 export CPPFLAGS="$CPPFLAGS -DDIG_SIGCHASE"
 export STD_CDEFINES="$CPPFLAGS"

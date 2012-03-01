@@ -1,6 +1,6 @@
 %define Werror_cflags -Wformat
 
-%define plevel P1
+%define plevel %nil
 
 # default options
 %define sdb_ldap 1
@@ -29,13 +29,19 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Epoch:		1
-Version:	9.8.1
-Release:	0.0.%{plevel}.3
+Version:	9.9.0
+%if "%plevel" != ""
+Release:	1.%{plevel}.0
+Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-%{plevel}.tar.gz
+Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-%{plevel}.tar.gz.asc
+%else
+Release:	1
+Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz
+Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz.asc
+%endif
 License:	Distributable
 Group:		System/Servers
 URL:		http://www.isc.org/products/BIND/
-Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-%{plevel}.tar.gz
-Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-%{plevel}.tar.gz.asc
 Source2:	bind-manpages.tar.bz2
 Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2
 Source4:	bind-named.init
@@ -69,16 +75,15 @@ Patch0:		bind-fallback-to-second-server.diff
 Patch1:		bind-queryperf_fix.diff
 Patch2:		bind-9.7.3-link.patch
 # http://code.google.com/p/bind-geoip/
-Patch3:		bind-9.8.1-geoip-1.3.diff
+Patch3:		bind-9.9.0-geoip-1.3.diff
 Patch100:	bind-9.8.1-sdb_ldap.diff
 Patch101:	bind-9.3.1-zone2ldap_fixes.diff
 Patch102:	bind-9.3.0rc2-sdb_mysql.patch
 Patch103:	zone2ldap-0.4-ldapv3.patch
-Patch104:	bind-9.8.1-dlz_fix.diff
 Patch200:	bind-9.2.0rc3-varrun.patch
 Patch205:	bind-9.3.2-prctl_set_dumpable.patch
 Patch208:	bind-9.5-overflow.patch
-Patch209:	bind-9.5-dlz-64bit.patch
+Patch209:	bind-9.9-dlz-64bit.patch
 Patch212:	bind-9.5-libidn.patch
 Patch213:	bind-9.5-libidn2.patch
 Patch215:	bind-9.5-libidn3.patch
@@ -86,7 +91,7 @@ Patch216:	bind95-rh461409.patch
 Patch218:	bind-96-libtool2.patch
 Patch219:	bind-95-rh452060.patch
 Patch220:	bind93-rh490837.patch
-Patch221:	bind-96-dyndb.patch
+Patch221:	bind-99-dyndb.patch
 Patch222:	bind97-rh478718.patch
 Patch223:	bind97-rh570851.patch
 Patch224:	bind97-rh645544.patch
@@ -183,7 +188,11 @@ The bind-devel package contains the documentation for BIND.
 
 %prep
 
+%if "%plevel" != ""
 %setup -q  -n %{name}-%{version}-%{plevel} -a2 -a3 -a12 -a13 -a14 -a15
+%else
+%setup -q  -n %{name}-%{version} -a2 -a3 -a12 -a13 -a14 -a15
+%endif
 
 %patch0 -p1 -b .fallback-to-second-server.droplet
 %patch1 -p0 -b .queryperf_fix.droplet
@@ -196,7 +205,6 @@ The bind-devel package contains the documentation for BIND.
 %patch100 -p1 -b .ldap_sdb.droplet
 %patch101 -p0 -b .zone2ldap_fixes.droplet
 %patch103 -p0 -b .ldapv3.droplet
-%patch104 -p0 -b .dlz_fix.droplet
 %endif
 
 %if %{sdb_mysql}
@@ -209,7 +217,7 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 %patch200 -p0 -b .varrun.droplet
 %patch205 -p0 -b .prctl_set_dumpable.droplet
 %patch208 -p1 -b .overflow.droplet
-%patch209 -p0 -b .64bit
+%patch209 -p1 -b .64bit
 
 %patch212 -p1 -b .libidn
 %patch213 -p1 -b .libidn2
@@ -646,5 +654,5 @@ fi
 %{_mandir}/man5/resolv.5*
 
 %files doc
-%doc doc/draft doc/html doc/rfc doc/misc/
+%doc doc/html doc/misc/
 %doc doc/dhcp-dynamic-dns-examples doc/chroot doc/trustix

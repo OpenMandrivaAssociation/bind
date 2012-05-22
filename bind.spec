@@ -82,7 +82,6 @@ Patch102:	bind-9.3.0rc2-sdb_mysql.patch
 Patch103:	zone2ldap-0.4-ldapv3.patch
 Patch200:	bind-9.2.0rc3-varrun.patch
 Patch205:	bind-9.3.2-prctl_set_dumpable.patch
-Patch208:	bind-9.5-overflow.patch
 Patch209:	bind-9.9-dlz-64bit.patch
 Patch212:	bind-9.5-libidn.patch
 Patch213:	bind-9.5-libidn2.patch
@@ -195,7 +194,7 @@ The bind-devel package contains the documentation for BIND.
 %endif
 
 %patch0 -p1 -b .fallback-to-second-server.droplet
-%patch1 -p0 -b .queryperf_fix.droplet
+%patch1 -p1 -b .queryperf_fix.droplet
 %patch2 -p0 -b .link
 %patch3 -p1 -b .geoip
 
@@ -216,7 +215,6 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 
 %patch200 -p0 -b .varrun.droplet
 %patch205 -p0 -b .prctl_set_dumpable.droplet
-%patch208 -p1 -b .overflow.droplet
 %patch209 -p1 -b .64bit
 
 %patch212 -p1 -b .libidn

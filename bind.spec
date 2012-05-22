@@ -29,7 +29,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Epoch:		1
-Version:	9.9.0
+Version:	9.9.1
 %if "%plevel" != ""
 Release:	1.%{plevel}.0
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-%{plevel}.tar.gz

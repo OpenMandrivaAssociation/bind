@@ -1,6 +1,6 @@
 %define Werror_cflags -Wformat
 
-%define plevel %nil
+%define plevel P1
 
 # default options
 %define sdb_ldap 1
@@ -32,8 +32,8 @@ Epoch:		1
 Version:	9.9.1
 %if "%plevel" != ""
 Release:	1.%{plevel}.0
-Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-%{plevel}.tar.gz
-Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}-%{plevel}.tar.gz.asc
+Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.gz
+Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.gz.asc
 %else
 Release:	1
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz

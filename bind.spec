@@ -1,6 +1,6 @@
 %define Werror_cflags -Wformat
 
-%define plevel P2
+%define plevel P3
 
 # default options
 %define sdb_ldap 1

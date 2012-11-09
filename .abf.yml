@@ -1,0 +1,27 @@
+sources:
+  "bind-9.9.1-P3.tar.gz:"	1c890f69f627ffbc76460c766bafefde408ed799
+  "bind-9.9.1-P3.tar.gz.asc:"	ac6a683028f76c95332bf05fdde11298ff9b9a12
+  "bind-dhcp-dynamic-dns-examples.tar.bz2:"	d33980aad3e0380fc89f8346ab37786d39157696
+  "bind-keygen.c:"	68d524901fabfacdfb297feaeafe4fde315ffa65
+  "bind-manpages.tar.bz2:"	4b08b3d62490f536ae52c34cfab1343d01b326c6
+  "bind-named.init:"	3c343efacae8fc547c4e8fb5e409e0a873875b60
+  "bind-named.sysconfig:"	53c3a40995535846850b8bd2bca55754df051cb7
+  "bind-sdb-ldap-1.0.tar.bz2:"	7e928238c01d2402c4ec6500a8dd6e4063e32aa1
+  "bogon_acl.conf:"	9569195c740ccde0918b9b75f24b41af3b4457d7
+  "hosts:"	5be04b26b64f29362a8e4968f3ca5c70c1ecb264
+  "ldap2zone.tar.bz2:"	779e446f07c1ae302d9ab85537d5d933885754c9
+  "localdomain.zone:"	5648d6da6f6818f7614cfdad163afa171b767313
+  "localhost.zone:"	d82539a90c5b77ed4b13081d5f6cdb8f50682237
+  "logging.conf:"	a8d125028d4991cb57dec093fb332973e1d9aae0
+  "mysql-bind-0.1.tar.bz2:"	187b8a05a98a2f47112a21b38fb8caa668f1e8f6
+  "named.broadcast:"	e010df534294bc69f1629c183d18e75b7f5d246e
+  "named.cache:"	ee52947062c1582858187716b776afa3613608fb
+  "named.conf:"	54c53511c201ef6277bf2a4ee6cc531c4f9afd60
+  "named.ip6.local:"	966343f6611c901665567077bf5ce03295b95b67
+  "named.iscdlv.key:"	fdffb11497e95c8515689b32b02dd009a2c5cf17
+  "named.local:"	f636209ae817a7d4659765e3ae31c23b12392464
+  "named.zero:"	e010df534294bc69f1629c183d18e75b7f5d246e
+  "rndc.conf:"	02d5428e45c42b6ac02a89af813a79e39862774a
+  "rndc.key:"	c4967d6ab100251f50e10510ff7e8a9cfc509c24
+  "trusted_networks_acl.conf:"	a375735200d5227b5c4ccf4bd5d5a7a5722000fb
+  "zone2ldap-0.4.tar.bz2:"	47534920ffee2c660455bf9668d86e6bec580d23

@@ -1,0 +1,18 @@
+--- zone2ldap/zone2ldap.c.ldapv3	2006-05-02 16:01:27.000000000 -0300
++++ zone2ldap/zone2ldap.c	2006-05-02 16:08:23.000000000 -0300
+@@ -796,6 +796,7 @@
+ init_ldap_conn ()
+ {
+   int result;
++  int protocol = LDAP_VERSION3;
+   char ldb_tag[]="LDAP Bind";
+   conn = ldap_open (ldapsystem, LDAP_PORT);
+   if (conn == NULL)
+@@ -805,6 +806,7 @@
+       exit (-1);
+     }
+ 
++  ldap_set_option(conn, LDAP_OPT_PROTOCOL_VERSION, &protocol);
+   result = ldap_simple_bind_s (conn, binddn, bindpw);
+   ldap_result_check ("ldap_simple_bind_s", ldb_tag , result);
+ }

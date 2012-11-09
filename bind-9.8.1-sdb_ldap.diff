@@ -1,0 +1,48 @@
+diff -Naurp bind-9.8.1/bin/named/main.c bind-9.8.1.oden/bin/named/main.c
+--- bind-9.8.1/bin/named/main.c	2011-03-11 07:47:00.000000000 +0100
++++ bind-9.8.1.oden/bin/named/main.c	2011-09-08 14:31:59.639369540 +0200
+@@ -81,7 +81,7 @@
+ /*
+  * Include header files for database drivers here.
+  */
+-/* #include "xxdb.h" */
++#include <ldapdb.h>
+ 
+ #ifdef CONTRIB_DLZ
+ /*
+@@ -857,7 +857,7 @@ setup(void) {
+ 	/*
+ 	 * Add calls to register sdb drivers here.
+ 	 */
+-	/* xxdb_init(); */
++	ldapdb_init();
+ 
+ #ifdef ISC_DLZ_DLOPEN
+ 	/*
+@@ -893,7 +893,7 @@ cleanup(void) {
+ 	/*
+ 	 * Add calls to unregister sdb drivers here.
+ 	 */
+-	/* xxdb_clear(); */
++	ldapdb_clear();
+ 
+ #ifdef CONTRIB_DLZ
+ 	/*
+diff -Naurp bind-9.8.1/bin/named/Makefile.in bind-9.8.1.oden/bin/named/Makefile.in
+--- bind-9.8.1/bin/named/Makefile.in	2011-09-08 14:31:49.032369544 +0200
++++ bind-9.8.1.oden/bin/named/Makefile.in	2011-09-08 14:31:59.638369540 +0200
+@@ -28,10 +28,10 @@ top_srcdir =	@top_srcdir@
+ #
+ # Add database drivers here.
+ #
+-DBDRIVER_OBJS =
+-DBDRIVER_SRCS =
+-DBDRIVER_INCLUDES =
+-DBDRIVER_LIBS =
++DBDRIVER_OBJS = ldapdb.@O@
++DBDRIVER_SRCS = ldapdb.c
++DBDRIVER_INCLUDES = -I${srcdir}/include
++DBDRIVER_LIBS = -L${srcdir}/lib -lldap -llber -lresolv
+ 
+ DLZ_DRIVER_DIR =	${top_srcdir}/contrib/dlz/drivers
+ 

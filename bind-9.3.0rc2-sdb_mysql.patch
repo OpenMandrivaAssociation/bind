@@ -1,0 +1,45 @@
+diff -Naur bind-9.3.0rc2/bin/named/Makefile.in bind-9.3.0rc2.oden/bin/named/Makefile.in
+--- bind-9.3.0rc2/bin/named/Makefile.in	2004-05-16 02:16:55.000000000 +0200
++++ bind-9.3.0rc2.oden/bin/named/Makefile.in	2004-07-30 14:08:02.026390368 +0200
+@@ -26,10 +26,10 @@
+ #
+ # Add database drivers here.
+ #
+-DBDRIVER_OBJS =
+-DBDRIVER_SRCS =
+-DBDRIVER_INCLUDES =
+-DBDRIVER_LIBS =
++DBDRIVER_OBJS = mysqldb.@O@
++DBDRIVER_SRCS = mysqldb.c
++DBDRIVER_INCLUDES = -I${srcdir}/include -I/usr/include/mysql
++DBDRIVER_LIBS = -L${srcdir}/lib -L/usr/lib/mysql -lmysqlclient -lz -lcrypt -lnsl -lm -lc -lnss_files -lnss_dns -lresolv -lc -lnss_files -lnss_dns -lresolv
+ 
+ CINCLUDES =	-I${srcdir}/include -I${srcdir}/unix/include \
+ 		${LWRES_INCLUDES} ${DNS_INCLUDES} ${BIND9_INCLUDES} \
+diff -Naur bind-9.3.0rc2/bin/named/main.c bind-9.3.0rc2.oden/bin/named/main.c
+--- bind-9.3.0rc2/bin/named/main.c	2004-07-01 04:01:34.000000000 +0200
++++ bind-9.3.0rc2.oden/bin/named/main.c	2004-07-30 14:11:15.315006032 +0200
+@@ -67,6 +67,7 @@
+  * Include header files for database drivers here.
+  */
+ /* #include "xxdb.h" */
++#include <mysqldb.h>
+ 
+ static isc_boolean_t	want_stats = ISC_FALSE;
+ static char		program_name[ISC_DIR_NAMEMAX] = "named";
+@@ -643,6 +644,7 @@
+ 	 * Add calls to register sdb drivers here.
+ 	 */
+ 	/* xxdb_init(); */
++	mysqldb_init();
+ 
+ 	ns_server_create(ns_g_mctx, &ns_g_server);
+ }
+@@ -659,6 +661,7 @@
+ 	 * Add calls to unregister sdb drivers here.
+ 	 */
+ 	/* xxdb_clear(); */
++	mysqldb_clear();
+ 
+ 	isc_log_write(ns_g_lctx, NS_LOGCATEGORY_GENERAL, NS_LOGMODULE_MAIN,
+ 		      ISC_LOG_NOTICE, "exiting");

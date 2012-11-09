@@ -1,0 +1,10 @@
+--- bind-9.9.1/contrib/queryperf/configure.in.queryperf_fix.droplet	2012-05-10 00:39:51.000000000 +0200
++++ bind-9.9.1/contrib/queryperf/configure.in	2012-05-22 11:11:37.793764641 +0200
+@@ -51,7 +51,6 @@ AC_DEFUN(AC_SA_LEN,
+   fi
+ ])
+ 
+-AC_CONFIG_HEADERS(config.h)
+ AC_SEARCH_LIBS(res_mkquery, resolv bind)
+ AC_SEARCH_LIBS(__res_mkquery, resolv bind)
+ AC_SEARCH_LIBS(res_9_mkquery, resolv bind)

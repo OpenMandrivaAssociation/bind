@@ -1,0 +1,11 @@
+--- bin/named/Makefile.in.link	2011-02-27 07:56:53.000000000 +0100
++++ bin/named/Makefile.in	2011-02-27 07:57:04.000000000 +0100
+@@ -49,7 +49,7 @@
+ 
+ CWARNINGS =
+ 
+-DNSLIBS =	../../lib/dns/libdns.@A@ @DNS_CRYPTO_LIBS@
++DNSLIBS =	../../lib/dns/libdns.@A@ @DNS_CRYPTO_LIBS@ -ldl
+ ISCCFGLIBS =	../../lib/isccfg/libisccfg.@A@
+ ISCCCLIBS =	../../lib/isccc/libisccc.@A@
+ ISCLIBS =	../../lib/isc/libisc.@A@

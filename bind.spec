@@ -1,6 +1,6 @@
 %define Werror_cflags -Wformat
 
-%define plevel P3
+%define plevel P2
 
 # default options
 %define sdb_ldap 1
@@ -654,3 +654,9 @@ fi
 %files doc
 %doc doc/html doc/misc/
 %doc doc/dhcp-dynamic-dns-examples doc/chroot doc/trustix
+
+
+%changelog
+* Wed Jul 25 2012 Bernhard Rosenkraenzer <bero@bero.eu> 1:9.9.1-1.P2.0
++ Revision: 810976
+- Update to 9.9.1-P2

@@ -1,0 +1,2 @@
+# OPTIONS="whatever" -- These additional options will be passed to named
+#                       at startup.

@@ -41,7 +41,7 @@ Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz.asc
 %endif
 License:	Distributable
 Group:		System/Servers
-URL:		http://www.isc.org/products/BIND/
+Url:		http://www.isc.org/products/BIND/
 Source2:	bind-manpages.tar.bz2
 Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2
 Source4:	bind-named.init
@@ -95,9 +95,6 @@ Patch222:	bind97-rh478718.patch
 Patch223:	bind97-rh570851.patch
 Patch224:	bind97-rh645544.patch
 
-BuildRequires:	openssl-devel
-BuildRequires:	autoconf2.5
-BuildRequires:	automake
 BuildRequires:  file
 %if %{sdb_mysql}
 BuildRequires:	mysql-devel
@@ -105,21 +102,21 @@ BuildRequires:	mysql-devel
 %if %{sdb_ldap}
 BuildRequires:	openldap-devel
 %endif
-BuildRequires:	libidn-devel
-BuildRequires:	postgresql-devel
-BuildRequires:	mysql-devel
-BuildRequires:	libcap-devel >= 2.10
 %if %{gssapi}
 BuildRequires:	krb5-devel
 %endif
-BuildRequires:	libxml2-devel
+BuildRequires:	libcap-devel >= 2.10
 BuildRequires:	libgeoip-devel
+BuildRequires:	mysql-devel
+BuildRequires:	postgresql-devel
+BuildRequires:	pkgconfig(libidn)
+BuildRequires:	pkgconfig(libxml-2.0)
+BuildRequires:	pkgconfig(openssl)
 
-Requires(pre): rpm-helper
-Requires(postun): rpm-helper
 Requires:	bind-utils >= %{version}-%{release}
 # takes care of MDV Bug #: 62829
 Requires:	openssl-engines
+Requires(pre,postun):	rpm-helper
 
 %description
 BIND (Berkeley Internet Name Domain) is an implementation of the DNS
@@ -377,8 +374,6 @@ gcc $CFLAGS -o dns-keygen keygen.c
 #make check
 
 %install
-rm -rf %{buildroot}
-
 pushd doc
     rm -rf html
 popd

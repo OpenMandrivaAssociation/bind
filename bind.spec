@@ -1,6 +1,6 @@
 %define Werror_cflags -Wformat
 
-%define plevel P2
+%define plevel P1
 
 # default options
 %define sdb_ldap 1
@@ -29,7 +29,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Epoch:		1
-Version:	9.9.1
+Version:	9.9.3
 %if "%plevel" != ""
 Release:	1.%{plevel}.0
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.gz
@@ -106,7 +106,7 @@ BuildRequires:	openldap-devel
 BuildRequires:	krb5-devel
 %endif
 BuildRequires:	libcap-devel >= 2.10
-BuildRequires:	libgeoip-devel
+BuildRequires:	geoip-devel
 BuildRequires:	mysql-devel
 BuildRequires:	postgresql-devel
 BuildRequires:	pkgconfig(libidn)
@@ -548,12 +548,15 @@ fi
 %{_sbindir}/arpaname
 %{_sbindir}/ddns-confgen
 %{_sbindir}/dns-keygen
+%{_sbindir}/dnssec-checkds
+%{_sbindir}/dnssec-coverage
 %{_sbindir}/dnssec-dsfromkey
 %{_sbindir}/dnssec-keyfromlabel
 %{_sbindir}/dnssec-keygen
 %{_sbindir}/dnssec-revoke
 %{_sbindir}/dnssec-settime
 %{_sbindir}/dnssec-signzone
+%{_sbindir}/dnssec-verify
 %{_sbindir}/genrandom
 %{_sbindir}/isc-hmac-fixup
 %{_sbindir}/lwresd

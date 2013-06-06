@@ -1,13 +1,10 @@
-diff -up bind-9.6.0b1/configure.in.libtool2 bind-9.6.0b1/configure.in
---- bind-9.6.0b1/configure.in.libtool2	2008-11-24 13:05:37.000000000 +0100
-+++ bind-9.6.0b1/configure.in	2008-11-24 13:05:56.000000000 +0100
-@@ -27,6 +27,8 @@ AC_CONFIG_SUBDIRS(lib/bind)
+--- bind-9.9.3-P1/configure.in.libtool2	2013-06-06 20:52:39.531454403 +0200
++++ bind-9.9.3-P1/configure.in	2013-06-06 20:53:16.801802818 +0200
+@@ -25,6 +25,7 @@ AC_PREREQ(2.59)
  
  AC_CONFIG_HEADER(config.h)
- 
+ AC_CONFIG_MACRO_DIR([libtool.m4])
 +AC_CONFIG_MACRO_DIR([m4])
-+
+ 
  AC_CANONICAL_HOST
  
- AC_PROG_MAKE_SET
-diff -up bind-9.6.0b1/Makefile.in.libtool2 bind-9.6.0b1/Makefile.in

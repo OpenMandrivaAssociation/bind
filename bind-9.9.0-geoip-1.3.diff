@@ -1,5 +1,23 @@
---- bind-9.9.0/bin/named/geoip.c.geoip	2012-03-01 02:16:26.275286335 +0100
-+++ bind-9.9.0/bin/named/geoip.c	2012-03-01 02:16:26.275286335 +0100
+--- bind-9.9.4-P1/bin/named/Makefile.in.geoip	2013-11-07 11:04:44.470447368 +0100
++++ bind-9.9.4-P1/bin/named/Makefile.in	2013-11-07 11:04:44.475447305 +0100
+@@ -93,6 +93,7 @@ OBJS =		builtin.@O@ client.@O@ config.@O
+ 		zoneconf.@O@ \
+ 		lwaddr.@O@ lwresd.@O@ lwdclient.@O@ lwderror.@O@ lwdgabn.@O@ \
+ 		lwdgnba.@O@ lwdgrbn.@O@ lwdnoop.@O@ lwsearch.@O@ \
++		geoip.@O@ \
+ 		${DLZDRIVER_OBJS} ${DBDRIVER_OBJS}
+ 
+ UOBJS =		unix/os.@O@ unix/dlz_dlopen_driver.@O@
+@@ -107,6 +108,7 @@ SRCS =		builtin.c client.c config.c cont
+ 		zoneconf.c \
+ 		lwaddr.c lwresd.c lwdclient.c lwderror.c lwdgabn.c \
+ 		lwdgnba.c lwdgrbn.c lwdnoop.c lwsearch.c \
++		geoip.c \
+ 		${DLZDRIVER_SRCS} ${DBDRIVER_SRCS}
+ 
+ MANPAGES =	named.8 lwresd.8 named.conf.5
+--- bind-9.9.4-P1/bin/named/geoip.c.geoip	2013-11-07 11:04:44.475447305 +0100
++++ bind-9.9.4-P1/bin/named/geoip.c	2013-11-07 11:04:44.475447305 +0100
 @@ -0,0 +1,254 @@
 +#ifdef HAVE_GEOIP
 +
@@ -255,26 +273,8 @@
 +} /* geoip_init() */
 +
 +#endif /* HAVE_GEOIP */
---- bind-9.9.0/bin/named/Makefile.in.geoip	2012-03-01 02:16:26.273286335 +0100
-+++ bind-9.9.0/bin/named/Makefile.in	2012-03-01 02:16:26.275286335 +0100
-@@ -87,6 +87,7 @@ OBJS =		builtin.@O@ client.@O@ config.@O
- 		zoneconf.@O@ \
- 		lwaddr.@O@ lwresd.@O@ lwdclient.@O@ lwderror.@O@ lwdgabn.@O@ \
- 		lwdgnba.@O@ lwdgrbn.@O@ lwdnoop.@O@ lwsearch.@O@ \
-+		geoip.@O@ \
- 		${DLZDRIVER_OBJS} ${DBDRIVER_OBJS}
- 
- UOBJS =		unix/os.@O@ unix/dlz_dlopen_driver.@O@
-@@ -101,6 +102,7 @@ SRCS =		builtin.c client.c config.c cont
- 		zoneconf.c \
- 		lwaddr.c lwresd.c lwdclient.c lwderror.c lwdgabn.c \
- 		lwdgnba.c lwdgrbn.c lwdnoop.c lwsearch.c \
-+		geoip.c \
- 		${DLZDRIVER_SRCS} ${DBDRIVER_SRCS}
- 
- MANPAGES =	named.8 lwresd.8 named.conf.5
---- bind-9.9.0/bin/named/server.c.geoip	2012-02-23 08:02:18.000000000 +0100
-+++ bind-9.9.0/bin/named/server.c	2012-03-01 02:18:31.435293441 +0100
+--- bind-9.9.4-P1/bin/named/server.c.geoip	2013-10-16 01:04:32.000000000 +0200
++++ bind-9.9.4-P1/bin/named/server.c	2013-11-07 11:06:16.273299674 +0100
 @@ -52,6 +52,9 @@
  #include <isc/timer.h>
  #include <isc/util.h>
@@ -285,7 +285,7 @@
  
  #include <isccfg/namedconf.h>
  
-@@ -5249,6 +5252,21 @@ view_loaded(void *arg) {
+@@ -5831,6 +5834,21 @@ view_loaded(void *arg) {
  	return (ISC_R_SUCCESS);
  }
  
@@ -305,12 +305,12 @@
 +#endif /* HAVE_GEOIP */
 +
  static isc_result_t
- load_zones(ns_server_t *server) {
+ load_zones(ns_server_t *server, isc_boolean_t init) {
  	isc_result_t result;
-@@ -5384,6 +5402,11 @@ run_server(isc_task_t *task, isc_event_t
+@@ -5983,6 +6001,11 @@ run_server(isc_task_t *task, isc_event_t
  	isc_hash_init();
  
- 	CHECKFATAL(load_zones(server), "loading zones");
+ 	CHECKFATAL(load_zones(server, ISC_TRUE), "loading zones");
 +
 +#ifdef HAVE_GEOIP
 +	/* Load GeoIP DBs */
@@ -319,7 +319,7 @@
  }
  
  void
-@@ -5828,6 +5851,10 @@ reload(ns_server_t *server) {
+@@ -6429,6 +6452,10 @@ reload(ns_server_t *server) {
  			      NS_LOGMODULE_SERVER, ISC_LOG_ERROR,
  			      "reloading zones failed: %s",
  			      isc_result_totext(result));
@@ -330,9 +330,9 @@
  
   cleanup:
  	return (result);
---- bind-9.9.0/configure.geoip	2012-01-30 11:09:37.000000000 +0100
-+++ bind-9.9.0/configure	2012-03-01 02:16:26.279286335 +0100
-@@ -533,6 +533,10 @@
+--- bind-9.9.4-P1/configure.geoip	2013-10-16 01:04:32.000000000 +0200
++++ bind-9.9.4-P1/configure	2013-11-07 11:04:44.482447218 +0100
+@@ -531,6 +531,10 @@
  ## M4sh Initialization. ##
  ## -------------------- ##
  
@@ -343,9 +343,9 @@
  # Be more Bourne compatible
  DUALCASE=1; export DUALCASE # for MKS sh
  if test -n "${ZSH_VERSION+set}" && (emulate sh) >/dev/null 2>&1; then :
---- bind-9.9.0/configure.in.geoip	2011-12-20 01:39:06.000000000 +0100
-+++ bind-9.9.0/configure.in	2012-03-01 02:16:26.280286335 +0100
-@@ -839,6 +839,78 @@ case "$use_pkcs11" in
+--- bind-9.9.4-P1/configure.in.geoip	2013-10-16 01:04:32.000000000 +0200
++++ bind-9.9.4-P1/configure.in	2013-11-07 11:04:44.482447218 +0100
+@@ -1013,6 +1013,78 @@ case "$use_pkcs11" in
  esac
  AC_SUBST(PKCS11_PROVIDER)
  
@@ -424,8 +424,8 @@
  AC_MSG_CHECKING(for GSSAPI library)
  AC_ARG_WITH(gssapi,
  [  --with-gssapi=PATH      Specify path for system-supplied GSSAPI [[default=yes]]],
---- bind-9.9.0/lib/dns/acl.c.geoip	2011-06-18 01:47:49.000000000 +0200
-+++ bind-9.9.0/lib/dns/acl.c	2012-03-01 02:16:26.280286335 +0100
+--- bind-9.9.4-P1/lib/dns/acl.c.geoip	2013-10-16 01:04:32.000000000 +0200
++++ bind-9.9.4-P1/lib/dns/acl.c	2013-11-07 11:04:44.482447218 +0100
 @@ -29,6 +29,72 @@
  #include <dns/acl.h>
  #include <dns/iptable.h>
@@ -499,7 +499,7 @@
  /*
   * Create a new ACL, including an IP table and an array with room
   * for 'n' ACL elements.  The elements are uninitialized and the
-@@ -375,6 +441,43 @@ dns_aclelement_match(const isc_netaddr_t
+@@ -378,6 +444,43 @@ dns_aclelement_match(const isc_netaddr_t
  	dns_acl_t *inner = NULL;
  	int indirectmatch;
  	isc_result_t result;
@@ -543,7 +543,7 @@
  
  	switch (e->type) {
  	case dns_aclelementtype_keyname:
-@@ -391,6 +494,477 @@ dns_aclelement_match(const isc_netaddr_t
+@@ -394,6 +497,477 @@ dns_aclelement_match(const isc_netaddr_t
  		inner = e->nestedacl;
  		break;
  
@@ -1021,8 +1021,8 @@
  	case dns_aclelementtype_localhost:
  		if (env == NULL || env->localhost == NULL)
  			return (ISC_FALSE);
---- bind-9.9.0/lib/dns/include/dns/acl.h.geoip	2011-06-18 01:47:49.000000000 +0200
-+++ bind-9.9.0/lib/dns/include/dns/acl.h	2012-03-01 02:16:26.280286335 +0100
+--- bind-9.9.4-P1/lib/dns/include/dns/acl.h.geoip	2013-10-16 01:04:32.000000000 +0200
++++ bind-9.9.4-P1/lib/dns/include/dns/acl.h	2013-11-07 11:04:44.482447218 +0100
 @@ -52,8 +52,139 @@ typedef enum {
  	dns_aclelementtype_nestedacl,
  	dns_aclelementtype_localhost,
@@ -1185,8 +1185,36 @@
  	dns_acl_t		*nestedacl;
  	int			node_num;
  };
---- bind-9.9.0/lib/isccfg/aclconf.c.geoip	2011-08-26 06:49:14.000000000 +0200
-+++ bind-9.9.0/lib/isccfg/aclconf.c	2012-03-01 02:16:26.280286335 +0100
+--- bind-9.9.4-P1/lib/isc/include/isc/geoip.h.geoip	2013-11-07 11:04:44.483447205 +0100
++++ bind-9.9.4-P1/lib/isc/include/isc/geoip.h	2013-11-07 11:04:44.483447205 +0100
+@@ -0,0 +1,25 @@
++#ifdef HAVE_GEOIP
++#ifndef _GEOIP_H
++#define _GEOIP_H
++
++#include <GeoIP.h>
++#include <GeoIPCity.h>
++
++void geoip_init( void );
++
++extern GeoIP * ns_g_geoip_countryDB ;		/*  1  */
++extern GeoIP * ns_g_geoip_cityDB ;			/* 2&6 */
++extern GeoIP * ns_g_geoip_regionDB ;		/* 3&7 */
++extern GeoIP * ns_g_geoip_ispDB ;			/*  4  */
++extern GeoIP * ns_g_geoip_orgDB ;			/*  5  */
++/* proxyDB doesn't apply in a DNS context	 *  8  */
++extern GeoIP * ns_g_geoip_asDB ;			/*  9  */
++extern GeoIP * ns_g_geoip_netspeedDB ;		/* 10  */
++extern GeoIP * ns_g_geoip_domainDB ;		/* 11  */
++#ifdef HAVE_GEOIP_V6
++extern GeoIP * ns_g_geoip_countryDB_v6 ;	/* 12  */
++#endif
++
++#endif /* !_GEOIP_H */
++#endif /* HAVE_GEOIP */
++
+--- bind-9.9.4-P1/lib/isccfg/aclconf.c.geoip	2013-10-16 01:04:32.000000000 +0200
++++ bind-9.9.4-P1/lib/isccfg/aclconf.c	2013-11-07 11:04:44.483447205 +0100
 @@ -31,6 +31,11 @@
  #include <dns/fixedname.h>
  #include <dns/log.h>
@@ -1549,36 +1577,8 @@
  			} else if (strcasecmp(name, "localhost") == 0) {
  				de->type = dns_aclelementtype_localhost;
  				de->negative = neg;
---- bind-9.9.0/lib/isc/include/isc/geoip.h.geoip	2012-03-01 02:16:26.280286335 +0100
-+++ bind-9.9.0/lib/isc/include/isc/geoip.h	2012-03-01 02:16:26.280286335 +0100
-@@ -0,0 +1,25 @@
-+#ifdef HAVE_GEOIP
-+#ifndef _GEOIP_H
-+#define _GEOIP_H
-+
-+#include <GeoIP.h>
-+#include <GeoIPCity.h>
-+
-+void geoip_init( void );
-+
-+extern GeoIP * ns_g_geoip_countryDB ;		/*  1  */
-+extern GeoIP * ns_g_geoip_cityDB ;			/* 2&6 */
-+extern GeoIP * ns_g_geoip_regionDB ;		/* 3&7 */
-+extern GeoIP * ns_g_geoip_ispDB ;			/*  4  */
-+extern GeoIP * ns_g_geoip_orgDB ;			/*  5  */
-+/* proxyDB doesn't apply in a DNS context	 *  8  */
-+extern GeoIP * ns_g_geoip_asDB ;			/*  9  */
-+extern GeoIP * ns_g_geoip_netspeedDB ;		/* 10  */
-+extern GeoIP * ns_g_geoip_domainDB ;		/* 11  */
-+#ifdef HAVE_GEOIP_V6
-+extern GeoIP * ns_g_geoip_countryDB_v6 ;	/* 12  */
-+#endif
-+
-+#endif /* !_GEOIP_H */
-+#endif /* HAVE_GEOIP */
-+
---- bind-9.9.0/named/geoip.c.geoip	2012-03-01 02:16:26.281286336 +0100
-+++ bind-9.9.0/named/geoip.c	2012-03-01 02:16:26.281286336 +0100
+--- bind-9.9.4-P1/named/geoip.c.geoip	2013-11-07 11:04:44.483447205 +0100
++++ bind-9.9.4-P1/named/geoip.c	2013-11-07 11:04:44.483447205 +0100
 @@ -0,0 +1,254 @@
 +#ifdef HAVE_GEOIP
 +

@@ -1,5 +1,5 @@
---- bind-9.9.4-P1/bin/dig/Makefile.in.libidn	2013-10-16 01:04:32.000000000 +0200
-+++ bind-9.9.4-P1/bin/dig/Makefile.in	2013-11-07 11:06:40.480997036 +0100
+--- bind-9.9.5/bin/dig/Makefile.in.libidn	2014-01-27 19:58:24.000000000 +0100
++++ bind-9.9.5/bin/dig/Makefile.in	2014-02-01 13:13:49.671102468 +0100
 @@ -48,10 +48,10 @@ DEPLIBS =	${DNSDEPLIBS} ${BIND9DEPLIBS}
  		${LWRESDEPLIBS}
  
@@ -22,8 +22,8 @@
  @BIND9_MAKE_RULES@
  
  dig@EXEEXT@: dig.@O@ dighost.@O@ ${UOBJS} ${DEPLIBS}
---- bind-9.9.4-P1/bin/dig/dighost.c.libidn	2013-11-07 11:06:40.460997286 +0100
-+++ bind-9.9.4-P1/bin/dig/dighost.c	2013-11-07 11:07:19.273512063 +0100
+--- bind-9.9.5/bin/dig/dighost.c.libidn	2014-02-01 13:13:49.647769134 +0100
++++ bind-9.9.5/bin/dig/dighost.c	2014-02-01 13:15:36.851103875 +0100
 @@ -44,6 +44,11 @@
  #include <idn/api.h>
  #endif
@@ -36,9 +36,9 @@
  #include <dns/byaddr.h>
  #ifdef DIG_SIGCHASE
  #include <dns/callbacks.h>
-@@ -157,6 +162,14 @@ static void		idn_check_result(idn_result
- int  idnoptions	= 0;
- #endif
+@@ -161,6 +166,14 @@ int  idnoptions	= 0;
+ isc_socket_t *keep = NULL;
+ isc_sockaddr_t keepaddr;
  
 +#ifdef WITH_LIBIDN
 +static isc_result_t	libidn_locale_to_utf8 (const char* from, char **to);
@@ -51,7 +51,7 @@
  /*%
   * Exit Codes:
   *
-@@ -1199,6 +1212,9 @@ setup_system(void) {
+@@ -1210,6 +1223,9 @@ setup_system(void) {
  	dig_searchlist_t *domain = NULL;
  	lwres_result_t lwresult;
  	unsigned int lwresflags;
@@ -61,7 +61,7 @@
  
  	debug("setup_system()");
  
-@@ -1257,8 +1273,15 @@ setup_system(void) {
+@@ -1268,8 +1284,15 @@ setup_system(void) {
  
  #ifdef WITH_IDN
  	initialize_idn();
@@ -78,7 +78,7 @@
  	if (keyfile[0] != 0)
  		setup_file_key();
  	else if (keysecret[0] != 0)
-@@ -1999,12 +2022,18 @@ setup_lookup(dig_lookup_t *lookup) {
+@@ -2028,12 +2051,18 @@ setup_lookup(dig_lookup_t *lookup) {
  	idn_result_t mr;
  	char utf8_textname[MXNAME], utf8_origin[MXNAME], idn_textname[MXNAME];
  #endif
@@ -98,7 +98,7 @@
  	REQUIRE(lookup != NULL);
  	INSIST(!free_now);
  
-@@ -2041,6 +2070,16 @@ setup_lookup(dig_lookup_t *lookup) {
+@@ -2070,6 +2099,16 @@ setup_lookup(dig_lookup_t *lookup) {
  	mr = idn_encodename(IDN_LOCALCONV | IDN_DELIMMAP, lookup->textname,
  			    utf8_textname, sizeof(utf8_textname));
  	idn_check_result(mr, "convert textname to UTF-8");
@@ -115,7 +115,7 @@
  #endif
  
  	/*
-@@ -2060,6 +2099,15 @@ setup_lookup(dig_lookup_t *lookup) {
+@@ -2089,6 +2128,15 @@ setup_lookup(dig_lookup_t *lookup) {
  			lookup->origin = ISC_LIST_HEAD(search_list);
  			lookup->need_search = ISC_FALSE;
  		}
@@ -131,7 +131,7 @@
  #else
  		if ((count_dots(lookup->textname) >= ndots) || !usesearch) {
  			lookup->origin = NULL; /* Force abs lookup */
-@@ -2086,6 +2134,20 @@ setup_lookup(dig_lookup_t *lookup) {
+@@ -2115,6 +2163,20 @@ setup_lookup(dig_lookup_t *lookup) {
  			    IDN_IDNCONV | IDN_LENCHECK, utf8_textname,
  			    idn_textname, sizeof(idn_textname));
  	idn_check_result(mr, "convert UTF-8 textname to IDN encoding");
@@ -152,7 +152,7 @@
  #else
  	if (lookup->origin != NULL) {
  		debug("trying origin %s", lookup->origin->origin);
-@@ -2141,6 +2203,13 @@ setup_lookup(dig_lookup_t *lookup) {
+@@ -2170,6 +2232,13 @@ setup_lookup(dig_lookup_t *lookup) {
  			result = dns_name_fromtext(lookup->name, &b,
  						   dns_rootname, 0,
  						   &lookup->namebuf);
@@ -166,7 +166,7 @@
  #else
  			len = strlen(lookup->textname);
  			isc_buffer_init(&b, lookup->textname, len);
-@@ -3703,7 +3772,7 @@ destroy_libs(void) {
+@@ -3788,7 +3857,7 @@ destroy_libs(void) {
  	void * ptr;
  	dig_message_t *chase_msg;
  #endif
@@ -175,7 +175,7 @@
  	isc_result_t result;
  #endif
  
-@@ -3742,6 +3811,10 @@ destroy_libs(void) {
+@@ -3829,6 +3898,10 @@ destroy_libs(void) {
  	result = dns_name_settotextfilter(NULL);
  	check_result(result, "dns_name_settotextfilter");
  #endif
@@ -186,7 +186,7 @@
  	dns_name_destroy();
  
  	if (commctx != NULL) {
-@@ -3920,6 +3993,79 @@ idn_check_result(idn_result_t r, const c
+@@ -4008,6 +4081,79 @@ idn_check_result(idn_result_t r, const c
  	}
  }
  #endif /* WITH_IDN */

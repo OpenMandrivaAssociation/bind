@@ -1,6 +1,6 @@
 %define Werror_cflags -Wformat
 
-%define plevel P2
+%define plevel %{nil}
 
 # default options
 %define sdb_ldap 1
@@ -29,13 +29,13 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Epoch:		1
-Version:	9.9.4
+Version:	9.9.5
 %if "%plevel" != ""
 Release:	1.%{plevel}.0
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.gz
 Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.gz.asc
 %else
-Release:	5
+Release:	1
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz
 Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz.asc
 %endif
@@ -551,6 +551,7 @@ fi
 %{_sbindir}/dnssec-checkds
 %{_sbindir}/dnssec-coverage
 %{_sbindir}/dnssec-dsfromkey
+%{_sbindir}/dnssec-importkey
 %{_sbindir}/dnssec-keyfromlabel
 %{_sbindir}/dnssec-keygen
 %{_sbindir}/dnssec-revoke
@@ -622,8 +623,10 @@ fi
 %files devel
 %doc CHANGES README
 %{_bindir}/isc-config.sh
+%{_bindir}/bind9-config
 %{_includedir}/*
 %{_libdir}/*.a
+%{_mandir}/man1/bind9-config.1*
 %{_mandir}/man1/isc-config.sh.1*
 %{_mandir}/man3/lwres*.3*
 

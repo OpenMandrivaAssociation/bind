@@ -1,5 +1,5 @@
 sources:
-  bind-9.9.4-P2.tar.gz: 9471a6df92732da1a879115e0416e23b9369544a
+  bind-9.9.5.tar.gz: f3fe8000628ec57f332aec1ad9587b767208a38f
   bind-dhcp-dynamic-dns-examples.tar.bz2: d33980aad3e0380fc89f8346ab37786d39157696
   bind-manpages.tar.bz2: 4b08b3d62490f536ae52c34cfab1343d01b326c6
   bind-sdb-ldap-1.0.tar.bz2: 7e928238c01d2402c4ec6500a8dd6e4063e32aa1

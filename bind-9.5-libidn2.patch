@@ -1,8 +1,7 @@
-diff -up bind-9.5.0b1/bin/dig/dighost.c.libidn2 bind-9.5.0b1/bin/dig/dighost.c
---- bind-9.5.0b1/bin/dig/dighost.c.libidn2	2007-12-10 13:12:26.000000000 +0100
-+++ bind-9.5.0b1/bin/dig/dighost.c	2007-12-10 14:21:09.000000000 +0100
-@@ -153,7 +153,7 @@ int  idnoptions	= 0;
- #endif
+--- bind-9.9.5/bin/dig/dighost.c.libidn2	2014-02-01 13:15:49.311104038 +0100
++++ bind-9.9.5/bin/dig/dighost.c	2014-02-01 13:17:57.054439048 +0100
+@@ -167,7 +167,7 @@ isc_socket_t *keep = NULL;
+ isc_sockaddr_t keepaddr;
  
  #ifdef WITH_LIBIDN
 -static isc_result_t	libidn_locale_to_utf8 (const char* from, char **to);
@@ -10,7 +9,7 @@ diff -up bind-9.5.0b1/bin/dig/dighost.c.libidn2 bind-9.5.0b1/bin/dig/dighost.c
  static isc_result_t	libidn_utf8_to_ascii (const char* from, char *to);
  static isc_result_t	output_filter (isc_buffer_t *buffer,
  				       unsigned int used_org,
-@@ -1764,17 +1764,13 @@ setup_lookup(dig_lookup_t *lookup) {
+@@ -2052,17 +2052,13 @@ setup_lookup(dig_lookup_t *lookup) {
  	char utf8_textname[MXNAME], utf8_origin[MXNAME], idn_textname[MXNAME];
  #endif
  #ifdef WITH_LIBIDN
@@ -30,7 +29,7 @@ diff -up bind-9.5.0b1/bin/dig/dighost.c.libidn2 bind-9.5.0b1/bin/dig/dighost.c
  	REQUIRE(lookup != NULL);
  	INSIST(!free_now);
  
-@@ -1812,15 +1808,13 @@ setup_lookup(dig_lookup_t *lookup) {
+@@ -2100,15 +2096,13 @@ setup_lookup(dig_lookup_t *lookup) {
  			    utf8_textname, sizeof(utf8_textname));
  	idn_check_result(mr, "convert textname to UTF-8");
  #elif defined (WITH_LIBIDN)
@@ -50,7 +49,7 @@ diff -up bind-9.5.0b1/bin/dig/dighost.c.libidn2 bind-9.5.0b1/bin/dig/dighost.c
  #endif
  
  	/*
-@@ -1833,24 +1827,11 @@ setup_lookup(dig_lookup_t *lookup) {
+@@ -2121,24 +2115,11 @@ setup_lookup(dig_lookup_t *lookup) {
  	if (lookup->new_search) {
  #ifdef WITH_IDN
  		if ((count_dots(utf8_textname) >= ndots) || !usesearch) {
@@ -76,7 +75,7 @@ diff -up bind-9.5.0b1/bin/dig/dighost.c.libidn2 bind-9.5.0b1/bin/dig/dighost.c
  			lookup->origin = NULL; /* Force abs lookup */
  			lookup->done_as_is = ISC_TRUE;
  			lookup->need_search = usesearch;
-@@ -1858,7 +1839,6 @@ setup_lookup(dig_lookup_t *lookup) {
+@@ -2146,7 +2127,6 @@ setup_lookup(dig_lookup_t *lookup) {
  			lookup->origin = ISC_LIST_HEAD(search_list);
  			lookup->need_search = ISC_FALSE;
  		}
@@ -84,7 +83,7 @@ diff -up bind-9.5.0b1/bin/dig/dighost.c.libidn2 bind-9.5.0b1/bin/dig/dighost.c
  	}
  
  #ifdef WITH_IDN
-@@ -1877,15 +1857,12 @@ setup_lookup(dig_lookup_t *lookup) {
+@@ -2165,15 +2145,12 @@ setup_lookup(dig_lookup_t *lookup) {
  	idn_check_result(mr, "convert UTF-8 textname to IDN encoding");
  #elif defined (WITH_LIBIDN)
  	if (lookup->origin != NULL) {
@@ -103,7 +102,7 @@ diff -up bind-9.5.0b1/bin/dig/dighost.c.libidn2 bind-9.5.0b1/bin/dig/dighost.c
  	}
  
  	result = libidn_utf8_to_ascii (utf8_name, ascii_name);
-@@ -3600,76 +3577,85 @@ idn_check_result(idn_result_t r, const c
+@@ -4082,76 +4059,85 @@ idn_check_result(idn_result_t r, const c
  }
  #endif /* WITH_IDN */
  #ifdef WITH_LIBIDN

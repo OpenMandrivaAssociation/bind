@@ -1,5 +1,5 @@
---- bind-9.9.4-P1/bin/named/main.c.dyndb	2013-11-07 11:07:41.628232591 +0100
-+++ bind-9.9.4-P1/bin/named/main.c	2013-11-07 11:07:41.645232378 +0100
+--- bind-9.9.5/bin/named/main.c.dyndb	2014-02-01 13:18:10.671105894 +0100
++++ bind-9.9.5/bin/named/main.c	2014-02-01 13:18:10.687772560 +0100
 @@ -45,6 +45,7 @@
  #include <isccc/result.h>
  
@@ -8,7 +8,7 @@
  #include <dns/name.h>
  #include <dns/result.h>
  #include <dns/view.h>
-@@ -930,6 +931,8 @@ setup(void) {
+@@ -948,6 +949,8 @@ setup(void) {
  
  static void
  cleanup(void) {
@@ -17,8 +17,8 @@
  	destroy_managers();
  
  	ns_server_destroy(&ns_g_server);
---- bind-9.9.4-P1/bin/named/server.c.dyndb	2013-11-07 11:07:41.621232678 +0100
-+++ bind-9.9.4-P1/bin/named/server.c	2013-11-07 11:08:22.209725252 +0100
+--- bind-9.9.5/bin/named/server.c.dyndb	2014-02-01 13:18:10.661105893 +0100
++++ bind-9.9.5/bin/named/server.c	2014-02-01 13:18:10.687772560 +0100
 @@ -66,6 +66,7 @@
  #include <dns/db.h>
  #include <dns/dispatch.h>
@@ -27,7 +27,7 @@
  #include <dns/dns64.h>
  #include <dns/forward.h>
  #include <dns/journal.h>
-@@ -1246,6 +1247,72 @@ configure_peer(const cfg_obj_t *cpeer, i
+@@ -1252,6 +1253,72 @@ configure_peer(const cfg_obj_t *cpeer, i
  }
  
  static isc_result_t
@@ -100,7 +100,7 @@
  disable_algorithms(const cfg_obj_t *disabled, dns_resolver_t *resolver) {
  	isc_result_t result;
  	const cfg_obj_t *algorithms;
-@@ -2061,6 +2128,7 @@ configure_view(dns_view_t *view, cfg_obj
+@@ -2074,6 +2141,7 @@ configure_view(dns_view_t *view, cfg_obj
  	const cfg_obj_t *dlz;
  	unsigned int dlzargc;
  	char **dlzargv;
@@ -108,7 +108,7 @@
  	const cfg_obj_t *disabled;
  	const cfg_obj_t *obj;
  	const cfg_listelt_t *element;
-@@ -2346,6 +2414,37 @@ configure_view(dns_view_t *view, cfg_obj
+@@ -2359,6 +2427,37 @@ configure_view(dns_view_t *view, cfg_obj
  	}
  
  	/*
@@ -146,7 +146,7 @@
  	 * Obtain configuration parameters that affect the decision of whether
  	 * we can reuse/share an existing cache.
  	 */
-@@ -4822,6 +4921,7 @@ setup_newzones(dns_view_t *view, cfg_obj
+@@ -4835,6 +4934,7 @@ setup_newzones(dns_view_t *view, cfg_obj
  	cfg_parser_attach(parser, &nzcfg->parser);
  	cfg_aclconfctx_attach(actx, &nzcfg->actx);
  
@@ -154,7 +154,7 @@
  	/*
  	 * Attempt to create a parser and parse the newzones
  	 * file.  If successful, preserve both; otherwise leave
-@@ -6440,6 +6540,7 @@ loadconfig(ns_server_t *server) {
+@@ -6453,6 +6553,7 @@ loadconfig(ns_server_t *server) {
  static isc_result_t
  reload(ns_server_t *server) {
  	isc_result_t result;
@@ -162,8 +162,8 @@
  	CHECK(loadconfig(server));
  
  	result = load_zones(server, ISC_FALSE);
---- bind-9.9.4-P1/lib/dns/Makefile.in.dyndb	2013-10-16 01:04:32.000000000 +0200
-+++ bind-9.9.4-P1/lib/dns/Makefile.in	2013-11-07 11:07:41.647232353 +0100
+--- bind-9.9.5/lib/dns/Makefile.in.dyndb	2014-01-27 19:58:24.000000000 +0100
++++ bind-9.9.5/lib/dns/Makefile.in	2014-02-01 13:18:10.687772560 +0100
 @@ -61,7 +61,7 @@ RRLOBJS =	rrl.@O@
  DNSOBJS =	acache.@O@ acl.@O@ adb.@O@ byaddr.@O@ \
  		cache.@O@ callbacks.@O@ clientinfo.@O@ compress.@O@ \
@@ -194,8 +194,8 @@
  libdns.@SA@: ${OBJS}
  	${AR} ${ARFLAGS} $@ ${OBJS}
  	${RANLIB} $@
---- bind-9.9.4-P1/lib/dns/dynamic_db.c.dyndb	2013-11-07 11:07:41.647232353 +0100
-+++ bind-9.9.4-P1/lib/dns/dynamic_db.c	2013-11-07 11:07:41.647232353 +0100
+--- bind-9.9.5/lib/dns/dynamic_db.c.dyndb	2014-02-01 13:18:10.687772560 +0100
++++ bind-9.9.5/lib/dns/dynamic_db.c	2014-02-01 13:18:10.687772560 +0100
 @@ -0,0 +1,364 @@
 +/*
 + * Copyright (C) 2008-2009  Red Hat, Inc.
@@ -561,19 +561,19 @@
 +
 +	return args->timermgr;
 +}
---- bind-9.9.4-P1/lib/dns/include/dns/Makefile.in.dyndb	2013-10-16 01:04:32.000000000 +0200
-+++ bind-9.9.4-P1/lib/dns/include/dns/Makefile.in	2013-11-07 11:07:41.647232353 +0100
-@@ -23,7 +23,7 @@ top_srcdir =	@top_srcdir@
- 
+--- bind-9.9.5/lib/dns/include/dns/Makefile.in.dyndb	2014-02-01 13:18:10.687772560 +0100
++++ bind-9.9.5/lib/dns/include/dns/Makefile.in	2014-02-01 13:18:36.927772905 +0100
+@@ -24,7 +24,7 @@ top_srcdir =	@top_srcdir@
  HEADERS =	acl.h adb.h byaddr.h cache.h callbacks.h cert.h compress.h \
- 		clientinfo.h db.h dbiterator.h dbtable.h diff.h dispatch.h \
+ 		client.h clientinfo.h compress.h \
+ 		db.h dbiterator.h dbtable.h diff.h dispatch.h \
 -		dlz.h dnssec.h ds.h events.h fixedname.h iptable.h journal.h \
-+		dlz.h dynamic_db.h dnssec.h ds.h events.h fixedname.h iptable.h journal.h \
++		dlz.h dnssec.h ds.h dynamic_db.h events.h fixedname.h iptable.h journal.h \
  		keyflags.h keytable.h keyvalues.h lib.h log.h \
  		master.h masterdump.h message.h name.h ncache.h nsec.h \
  		peer.h portlist.h private.h rbt.h rcode.h \
---- bind-9.9.4-P1/lib/dns/include/dns/dynamic_db.h.dyndb	2013-11-07 11:07:41.647232353 +0100
-+++ bind-9.9.4-P1/lib/dns/include/dns/dynamic_db.h	2013-11-07 11:07:41.647232353 +0100
+--- bind-9.9.5/lib/dns/include/dns/dynamic_db.h.dyndb	2014-02-01 13:18:10.687772560 +0100
++++ bind-9.9.5/lib/dns/include/dns/dynamic_db.h	2014-02-01 13:18:10.687772560 +0100
 @@ -0,0 +1,50 @@
 +/*
 + * Copyright (C) 2008-2009  Red Hat, Inc.
@@ -625,8 +625,8 @@
 +isc_timermgr_t *dns_dyndb_get_timermgr(dns_dyndb_arguments_t *args);
 +
 +#endif
---- bind-9.9.4-P1/lib/dns/include/dns/log.h.dyndb	2013-10-16 01:04:32.000000000 +0200
-+++ bind-9.9.4-P1/lib/dns/include/dns/log.h	2013-11-07 11:07:41.647232353 +0100
+--- bind-9.9.5/lib/dns/include/dns/log.h.dyndb	2014-01-27 19:58:24.000000000 +0100
++++ bind-9.9.5/lib/dns/include/dns/log.h	2014-02-01 13:18:10.687772560 +0100
 @@ -77,6 +77,7 @@ LIBDNS_EXTERNAL_DATA extern isc_logmodul
  #define DNS_LOGMODULE_DLZ		(&dns_modules[26])
  #define DNS_LOGMODULE_DNSSEC		(&dns_modules[27])
@@ -635,8 +635,8 @@
  
  ISC_LANG_BEGINDECLS
  
---- bind-9.9.4-P1/lib/dns/include/dns/types.h.dyndb	2013-10-16 01:04:32.000000000 +0200
-+++ bind-9.9.4-P1/lib/dns/include/dns/types.h	2013-11-07 11:07:41.647232353 +0100
+--- bind-9.9.5/lib/dns/include/dns/types.h.dyndb	2014-01-27 19:58:24.000000000 +0100
++++ bind-9.9.5/lib/dns/include/dns/types.h	2014-02-01 13:18:10.687772560 +0100
 @@ -60,6 +60,7 @@ typedef struct dns_dbtable			dns_dbtable
  typedef void					dns_dbversion_t;
  typedef struct dns_dlzimplementation		dns_dlzimplementation_t;
@@ -645,8 +645,8 @@
  typedef struct dns_sdlzimplementation		dns_sdlzimplementation_t;
  typedef struct dns_decompress			dns_decompress_t;
  typedef struct dns_dispatch			dns_dispatch_t;
---- bind-9.9.4-P1/lib/dns/log.c.dyndb	2013-10-16 01:04:32.000000000 +0200
-+++ bind-9.9.4-P1/lib/dns/log.c	2013-11-07 11:07:41.647232353 +0100
+--- bind-9.9.5/lib/dns/log.c.dyndb	2014-01-27 19:58:24.000000000 +0100
++++ bind-9.9.5/lib/dns/log.c	2014-02-01 13:18:10.687772560 +0100
 @@ -83,6 +83,7 @@ LIBDNS_EXTERNAL_DATA isc_logmodule_t dns
  	{ "dns/dlz",		0 },
  	{ "dns/dnssec",		0 },
@@ -655,8 +655,8 @@
  	{ NULL, 		0 }
  };
  
---- bind-9.9.4-P1/lib/isccfg/namedconf.c.dyndb	2013-10-16 01:04:32.000000000 +0200
-+++ bind-9.9.4-P1/lib/isccfg/namedconf.c	2013-11-07 11:07:41.647232353 +0100
+--- bind-9.9.5/lib/isccfg/namedconf.c.dyndb	2014-01-27 19:58:24.000000000 +0100
++++ bind-9.9.5/lib/isccfg/namedconf.c	2014-02-01 13:18:10.687772560 +0100
 @@ -92,6 +92,7 @@ static cfg_type_t cfg_type_controls;
  static cfg_type_t cfg_type_controls_sockaddr;
  static cfg_type_t cfg_type_destinationlist;

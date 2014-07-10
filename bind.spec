@@ -264,6 +264,8 @@ find . -type f|xargs file|grep 'text'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
 CFLAGS=`echo $CFLAGS|sed -e 's|-fPIE||g'`
 CXXFLAGS=`echo $CXXFLAGS|sed -e 's|-fPIE||g'`
 
+export CC=%{__cc}
+export CXX=%{__cxx}
 export CPPFLAGS="$CPPFLAGS -DDIG_SIGCHASE"
 export STD_CDEFINES="$CPPFLAGS"
 
@@ -277,7 +279,7 @@ export WANT_AUTOCONF_2_5=1
 rm -f configure
 autoconf
 
-%configure2_5x
+%configure
 %make CFLAGS="$CFLAGS"
 popd
 
@@ -286,14 +288,14 @@ export WANT_AUTOCONF_2_5=1
 perl -pi -e "s|-lnsl|-lnsl -lresolv|g" configure*
 rm -f configure
 autoconf
-%configure2_5x
+%configure
 %make CFLAGS="$CFLAGS"
 popd
 
 export CFLAGS="$CFLAGS -DLDAP_DEPRECATED"
 
 # threading is evil for the host command
-%configure2_5x \
+%configure \
     --localstatedir=/var \
     --disable-openssl-version-check \
     --disable-threads \
@@ -342,32 +344,32 @@ make
 pushd zone2ldap
 # fix references to zone2ldap
 perl -pi -e "s|zone2ldap|zonetoldap|g" *
-    gcc $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
+    %{__cc} $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
     -I../lib/isc/include -I../lib/isc/unix/include -I../lib/isc/pthreads/include -c zone2ldap.c
-    gcc $CFLAGS $LDFLAGS -o zone2ldap zone2ldap.o ../lib/dns/libdns.a -lcrypto -lpthread \
+    %{__cc} $CFLAGS $LDFLAGS -o zone2ldap zone2ldap.o ../lib/dns/libdns.a -lcrypto -lpthread \
     ../lib/isc/libisc.a -lldap -llber -lresolv %{?gssapi:`krb5-config --libs gssapi`} -lxml2 -lGeoIP
 popd
 
 pushd ldap2zone
-    gcc $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
+    %{__cc} $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
     -I../lib/isc/include -I../lib/isc/unix/include -I../lib/isc/pthreads/include -c ldap2zone.c
-    gcc $CFLAGS $LDFLAGS -o ldap2zone ldap2zone.o ../lib/dns/libdns.a -lcrypto -lpthread \
+    %{__cc} $CFLAGS $LDFLAGS -o ldap2zone ldap2zone.o ../lib/dns/libdns.a -lcrypto -lpthread \
     ../lib/isc/libisc.a -lldap -llber -lresolv %{?_with_gssapi:`krb5-config --libs gssapi`} -lxml2 -lGeoIP
 popd
 %endif
 
 %if %{sdb_mysql}
 pushd contrib/sdb/mysql
-gcc $CFLAGS -I%{_includedir}/mysql -I../../../lib/dns/include -I../../../lib/dns/sec/dst/include \
+%{__cc} $CFLAGS -I%{_includedir}/mysql -I../../../lib/dns/include -I../../../lib/dns/sec/dst/include \
   -I../../../lib/isc/include -I../../../lib/isc/unix/include -I../../../lib/isc/pthreads/include \
   -c zonetodb.c
-gcc $CFLAGS $LDFLAGS -o zonetodb zonetodb.o \
+%{_cc} $CFLAGS $LDFLAGS -o zonetodb zonetodb.o \
   ../../../lib/dns/libdns.a -lcrypto -lpthread ../../../lib/isc/libisc.a \
   -lmysqlclient -lresolv %{?_with_gssapi:`krb5-config --libs gssapi`} -lxml2 -lGeoIP
 popd
 %endif
 
-gcc $CFLAGS -o dns-keygen keygen.c
+%{__cc} $CFLAGS -o dns-keygen keygen.c
 
 #%%check
 ## run the test suite
@@ -655,9 +657,3 @@ fi
 %files doc
 %doc doc/html doc/misc/
 %doc doc/dhcp-dynamic-dns-examples doc/chroot doc/trustix
-
-
-%changelog
-* Wed Jul 25 2012 Bernhard Rosenkraenzer <bero@bero.eu> 1:9.9.1-1.P2.0
-+ Revision: 810976
-- Update to 9.9.1-P2

@@ -1,4 +1,5 @@
 %define Werror_cflags -Wformat
+%define _disable_lto 1
 
 %define plevel %{nil}
 
@@ -29,13 +30,13 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Epoch:		1
-Version:	9.9.5
+Version:	9.9.8
 %if "%plevel" != ""
 Release:	1.%{plevel}.0
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.gz
 Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.gz.asc
 %else
-Release:	6
+Release:	1
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz
 Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz.asc
 %endif

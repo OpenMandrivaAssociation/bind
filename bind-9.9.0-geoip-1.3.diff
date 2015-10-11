@@ -1239,7 +1239,7 @@
 +#endif /* HAVE_GEOIP */
  			} else if (strcasecmp(name, "any") != 0 &&
  				   strcasecmp(name, "none") != 0) {
- 				result = get_acl_def(cctx, name, &cacl);
+ 				dns_acl_t *inneracl = NULL;
 @@ -441,6 +452,336 @@ nested_acl:
  					de->negative = !neg;
  				} else
@@ -1575,8 +1575,8 @@
 +				de->negative = neg;
 +#endif /* HAVE_GEOIP */
  			} else if (strcasecmp(name, "localhost") == 0) {
+ 				INSIST(dacl->length < dacl->alloc);
  				de->type = dns_aclelementtype_localhost;
- 				de->negative = neg;
 --- bind-9.9.4-P1/named/geoip.c.geoip	2013-11-07 11:04:44.483447205 +0100
 +++ bind-9.9.4-P1/named/geoip.c	2013-11-07 11:04:44.483447205 +0100
 @@ -0,0 +1,254 @@

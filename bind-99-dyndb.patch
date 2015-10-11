@@ -107,7 +107,7 @@
 +	const cfg_obj_t *dynamic_db_list;
  	const cfg_obj_t *disabled;
  	const cfg_obj_t *obj;
- 	const cfg_listelt_t *element;
+ #ifdef ENABLE_FETCHLIMIT
 @@ -2359,6 +2427,37 @@ configure_view(dns_view_t *view, cfg_obj
  	}
  
@@ -564,14 +564,14 @@
 --- bind-9.9.5/lib/dns/include/dns/Makefile.in.dyndb	2014-02-01 13:18:10.687772560 +0100
 +++ bind-9.9.5/lib/dns/include/dns/Makefile.in	2014-02-01 13:18:36.927772905 +0100
 @@ -24,7 +24,7 @@ top_srcdir =	@top_srcdir@
- HEADERS =	acl.h adb.h byaddr.h cache.h callbacks.h cert.h compress.h \
+ HEADERS =	acache.h acl.h adb.h bit.h byaddr.h cache.h callbacks.h cert.h \
  		client.h clientinfo.h compress.h \
  		db.h dbiterator.h dbtable.h diff.h dispatch.h \
--		dlz.h dnssec.h ds.h events.h fixedname.h iptable.h journal.h \
-+		dlz.h dnssec.h ds.h dynamic_db.h events.h fixedname.h iptable.h journal.h \
- 		keyflags.h keytable.h keyvalues.h lib.h log.h \
- 		master.h masterdump.h message.h name.h ncache.h nsec.h \
- 		peer.h portlist.h private.h rbt.h rcode.h \
+-		dlz.h dlz_dlopen.h dns64.h dnssec.h ds.h \
++		dlz.h dlz_dlopen.h dns64.h dnssec.h ds.h dynamic_db.h \
+ 		ecdb.h events.h fixedname.h forward.h iptable.h \
+ 		journal.h keydata.h keyflags.h keytable.h keyvalues.h \
+ 		lib.h lookup.h log.h master.h masterdump.h message.h \
 --- bind-9.9.5/lib/dns/include/dns/dynamic_db.h.dyndb	2014-02-01 13:18:10.687772560 +0100
 +++ bind-9.9.5/lib/dns/include/dns/dynamic_db.h	2014-02-01 13:18:10.687772560 +0100
 @@ -0,0 +1,50 @@
@@ -668,7 +668,7 @@
 @@ -897,6 +898,7 @@ namedconf_or_view_clauses[] = {
  	{ "zone", &cfg_type_zone, CFG_CLAUSEFLAG_MULTI },
  	/* only 1 DLZ per view allowed */
- 	{ "dlz", &cfg_type_dynamically_loadable_zones, 0 },
+ 	{ "dlz", &cfg_type_dlz, 0 },
 +	{ "dynamic-db", &cfg_type_dynamic_db, CFG_CLAUSEFLAG_MULTI },
  	{ "server", &cfg_type_server, CFG_CLAUSEFLAG_MULTI },
  	{ "trusted-keys", &cfg_type_dnsseckeys, CFG_CLAUSEFLAG_MULTI },

@@ -113,6 +113,7 @@ BuildRequires:	postgresql-devel
 BuildRequires:	pkgconfig(libidn)
 BuildRequires:	pkgconfig(libxml-2.0)
 BuildRequires:	pkgconfig(openssl)
+BuildRequires:  readline-devel
 
 Requires:	bind-utils >= %{version}-%{release}
 # takes care of MDV Bug #: 62829

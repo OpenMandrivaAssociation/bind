@@ -1,7 +1,7 @@
 %define Werror_cflags -Wformat
 %define _disable_lto 1
 
-%define plevel %{nil}
+%define plevel P3
 
 # default options
 %define sdb_ldap 1
@@ -30,15 +30,13 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Epoch:		1
-Version:	9.9.8
+Version:	9.10.4
 %if "%plevel" != ""
 Release:	1.%{plevel}.0
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.gz
-Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.gz.asc
 %else
 Release:	2
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz
-Source1:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz.asc
 %endif
 License:	Distributable
 Group:		System/Servers
@@ -312,7 +310,7 @@ make -C bin/dig
 make -C bin/dig DESTDIR="`pwd`" install 
 make clean
 
-%configure2_5x \
+%configure \
     --localstatedir=/var \
     --disable-openssl-version-check \
     --enable-threads \
@@ -340,7 +338,7 @@ make clean
 # http://sourceforge.net/projects/opencryptoki
 #--with-pkcs11 \
 
-make
+%make -j1
 
 %if %{sdb_ldap}
 pushd zone2ldap
@@ -531,22 +529,11 @@ if grep -q "_MY_KEY_" /var/lib/named/etc/rndc.conf /var/lib/named/etc/rndc.key; 
     perl -pi -e "s|_MY_KEY_|$MYKEY|g" /var/lib/named/etc/rndc.conf /var/lib/named/etc/rndc.key
 fi
 
-%_post_service named
-
-%preun
-%_preun_service named
-
 %postun
 %_postun_userdel named
 
 %files
-%doc CHANGES README FAQ COPYRIGHT README.urpmi
-%if %{sdb_ldap}
-%doc contrib/sdb/ldap/README.ldap contrib/sdb/ldap/INSTALL.ldap
-%endif
-%if %{sdb_mysql}
-%doc contrib/sdb/mysql/ChangeLog.mysql contrib/sdb/mysql/README.mysql
-%endif
+%doc README.urpmi
 %config(noreplace) %{_sysconfdir}/sysconfig/named
 %{_initrddir}/named
 %{_sbindir}/arpaname
@@ -625,7 +612,6 @@ fi
 %config(noreplace) /var/lib/named/var/named/named.ca
 
 %files devel
-%doc CHANGES README
 %{_bindir}/isc-config.sh
 %{_bindir}/bind9-config
 %{_includedir}/*
@@ -635,7 +621,6 @@ fi
 %{_mandir}/man3/lwres*.3*
 
 %files utils
-%doc README COPYRIGHT *.query-loc *.queryperf
 %{_bindir}/dig
 %{_bindir}/host
 %{_bindir}/nslookup
@@ -648,7 +633,6 @@ fi
 %{_mandir}/man1/nsupdate.1*
 %{_mandir}/man1/query-loc.1*
 %if %{sdb_ldap}
-%doc zone2ldap/zone2ldap.README ldap2zone/README.ldap2zone ldap2zone/dnszone-schema.txt
 %{_bindir}/zonetoldap
 %{_bindir}/ldap2zone
 %{_mandir}/man1/zonetoldap.1*
@@ -657,5 +641,16 @@ fi
 %{_mandir}/man5/resolv.5*
 
 %files doc
+%doc CHANGES README FAQ COPYRIGHT
+%if %{sdb_ldap}
+%doc contrib/sdb/ldap/README.ldap contrib/sdb/ldap/INSTALL.ldap
+%endif
+%if %{sdb_mysql}
+%doc contrib/sdb/mysql/ChangeLog.mysql contrib/sdb/mysql/README.mysql
+%endif
 %doc doc/html doc/misc/
 %doc doc/dhcp-dynamic-dns-examples doc/chroot doc/trustix
+%doc *.query-loc *.queryperf
+%if %{sdb_ldap}
+%doc zone2ldap/zone2ldap.README ldap2zone/README.ldap2zone ldap2zone/dnszone-schema.txt
+%endif

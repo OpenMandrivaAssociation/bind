@@ -5,7 +5,7 @@
 
 # default options
 %define sdb_mysql 0
-%bcond_without gssapi
+%bcond_with gssapi
 
 %{?_with_sdb_mysql: %{expand: %%global sdb_mysql 1}}
 %{?_without_sdb_mysql: %{expand: %%global sdb_mysql 0}}
@@ -18,7 +18,7 @@ Version:	9.12.2
 Release:	1.%{plevel}.0
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.gz
 %else
-Release:	3
+Release:	1
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz
 %endif
 License:	Distributable
@@ -264,6 +264,8 @@ make clean
     --with-openssl=%{_prefix} \
 %if %{with gssapi}
     --with-gssapi=%{_prefix} --disable-isc-spnego \
+%else
+    --without-gssapi \
 %endif
     --with-randomdev=/dev/urandom \
     --with-libxml2=yes \

@@ -66,6 +66,7 @@ BuildRequires:	pkgconfig(krb5)
 BuildRequires:	libcap-devel >= 2.10
 BuildRequires:	geoip-devel
 BuildRequires:	mysql-devel
+BuildRequires:	openldap-devel
 BuildRequires:	postgresql-devel
 BuildRequires:	pkgconfig(libidn)
 BuildRequires:	pkgconfig(libxml-2.0)

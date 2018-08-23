@@ -1,27 +1,16 @@
 %define Werror_cflags -Wformat
 %define _disable_lto 1
 
-%define plevel P3
+%define plevel P1
 
 # default options
-%define sdb_ldap 1
 %define sdb_mysql 0
 %define gssapi 1
 
-%{?_with_sdb_ldap: %{expand: %%global sdb_ldap 1}}
-%{?_without_sdb_ldap: %{expand: %%global sdb_ldap 0}}
 %{?_with_sdb_mysql: %{expand: %%global sdb_mysql 1}}
 %{?_without_sdb_mysql: %{expand: %%global sdb_mysql 0}}
 %{?_with_gssapi: %{expand: %%global gssapi 1}}
 %{?_without_gssapi: %{expand: %%global gssapi 0}}
-
-%if %{sdb_mysql}
-%define sdb_ldap 0
-%endif
-
-%if %{sdb_ldap}
-%define sdb_mysql 0
-%endif
 
 %if %{gssapi}
 %define gssapi 1
@@ -30,7 +19,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Epoch:		1
-Version:	9.10.4
+Version:	9.12.2
 %if "%plevel" != ""
 Release:	1.%{plevel}.0
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.gz
@@ -49,12 +38,6 @@ Source7:	bind-keygen.c
 Source11:	ftp://ftp.internic.net/domain/named.cache
 # (oe) http://mysql-bind.sourceforge.net/
 Source12:	mysql-bind-0.1.tar.bz2
-# (oe) http://bind9-ldap.bayour.com/bind-sdb-ldap-1.0.tar.gz
-Source13:	bind-sdb-ldap-1.0.tar.bz2
-# (oe) http://www.blue-giraffe.com/zone2ldap/zone2ldap-0.4.tar.gz
-Source14:	zone2ldap-0.4.tar.bz2
-# (oe) http://www.venaas.no/dns/ldap2zone/
-Source15:	ldap2zone.tar.bz2
 # caching-nameserver files (S100-S112)
 Source100:	bogon_acl.conf
 Source101:	hosts
@@ -73,33 +56,15 @@ Source113:	named.iscdlv.key
 Patch0:		bind-fallback-to-second-server.diff
 Patch1:		bind-queryperf_fix.diff
 Patch2:		bind-9.7.3-link.patch
-# http://code.google.com/p/bind-geoip/
-Patch3:		bind-9.9.0-geoip-1.3.diff
-Patch100:	bind-9.8.1-sdb_ldap.diff
-Patch101:	bind-9.3.1-zone2ldap_fixes.diff
+Patch3:		bind-9.12.2-json-c.patch
 Patch102:	bind-9.3.0rc2-sdb_mysql.patch
-Patch103:	zone2ldap-0.4-ldapv3.patch
-Patch200:	bind-9.2.0rc3-varrun.patch
 Patch205:	bind-9.3.2-prctl_set_dumpable.patch
 Patch209:	bind-9.9-dlz-64bit.patch
-Patch212:	bind-9.5-libidn.patch
-Patch213:	bind-9.5-libidn2.patch
-Patch215:	bind-9.5-libidn3.patch
-Patch216:	bind95-rh461409.patch
 Patch218:	bind-96-libtool2.patch
-Patch219:	bind-95-rh452060.patch
-Patch220:	bind93-rh490837.patch
-Patch221:	bind-99-dyndb.patch
-Patch222:	bind97-rh478718.patch
-Patch223:	bind97-rh570851.patch
-Patch224:	bind97-rh645544.patch
 
 BuildRequires:  file
 %if %{sdb_mysql}
 BuildRequires:	mysql-devel
-%endif
-%if %{sdb_ldap}
-BuildRequires:	openldap-devel
 %endif
 %if %{gssapi}
 BuildRequires:	krb5-devel
@@ -111,7 +76,9 @@ BuildRequires:	postgresql-devel
 BuildRequires:	pkgconfig(libidn)
 BuildRequires:	pkgconfig(libxml-2.0)
 BuildRequires:	pkgconfig(openssl)
+BuildRequires:	pkgconfig(json-c)
 BuildRequires:  readline-devel
+BuildRequires:	rpm-helper
 
 Requires:	bind-utils >= %{version}-%{release}
 # takes care of MDV Bug #: 62829
@@ -148,10 +115,7 @@ New configuration options: "min-refresh-time", "max-refresh-time",
 Faster lookups, particularly in large zones. 
 
 Build Options:
---without sdb_ldap    Build without ldap simple database support (enabled
-                      per default)
---with sdb_mysql      Build with MySQL database support (disables ldap
-                      support, it's either way.)
+--with sdb_mysql      Build with MySQL database support
 %package	utils
 Summary:	Utilities for querying DNS name servers
 Group:		Networking/Other
@@ -182,26 +146,25 @@ Group:		Books/Other
 %description	doc
 The bind-devel package contains the documentation for BIND.
 
+%package -n python-isc
+Summary:	Python bindings to the ISC library
+Group:		Development/Python
+BuildRequires:	pkgconfig(python3)
+
+%description -n python-isc
+Python bindings to the ISC library
+
 %prep
 
 %if "%plevel" != ""
-%setup -q  -n %{name}-%{version}-%{plevel} -a2 -a3 -a12 -a13 -a14 -a15
+%setup -q  -n %{name}-%{version}-%{plevel} -a2 -a3 -a12
 %else
-%setup -q  -n %{name}-%{version} -a2 -a3 -a12 -a13 -a14 -a15
+%setup -q  -n %{name}-%{version} -a2 -a3 -a12
 %endif
 
 %patch0 -p1 -b .fallback-to-second-server.droplet
 %patch1 -p1 -b .queryperf_fix.droplet
-%patch2 -p0 -b .link
-%patch3 -p1 -b .geoip
-
-%if %{sdb_ldap}
-%__cp bind-sdb-ldap-*/ldapdb.c bin/named/
-%__cp bind-sdb-ldap-*/ldapdb.h bin/named/include/
-%patch100 -p1 -b .ldap_sdb.droplet
-%patch101 -p0 -b .zone2ldap_fixes.droplet
-%patch103 -p0 -b .ldapv3.droplet
-%endif
+%patch2 -p1 -b .link
 
 %if %{sdb_mysql}
 mv mysql-bind-0.1 contrib/sdb/mysql
@@ -210,22 +173,11 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 %patch102 -p1 -b .sdb_mysql.droplet
 %endif
 
-%patch200 -p0 -b .varrun.droplet
 %patch205 -p0 -b .prctl_set_dumpable.droplet
 %patch209 -p1 -b .64bit
 
-%patch212 -p1 -b .libidn
-%patch213 -p1 -b .libidn2
-%patch215 -p1 -b .libidn3
-%patch216 -p1 -b .rh461409
 mkdir -p m4
 %patch218 -p1 -b .libtool2
-%patch219 -p0 -b .rh452060
-%patch220 -p0 -b .rh490837
-%patch221 -p1 -b .dyndb
-%patch222 -p1 -b .rh478718
-%patch223 -p1 -b .rh570851
-%patch224 -p1 -b .rh645544
 
 cp %{SOURCE4} named.init
 # fix https://qa.mandriva.com/show_bug.cgi?id=62829
@@ -280,15 +232,9 @@ rm -f configure
 autoconf
 
 %configure
-%make CFLAGS="$CFLAGS"
-popd
-
-pushd contrib/query-loc-*
-export WANT_AUTOCONF_2_5=1
-perl -pi -e "s|-lnsl|-lnsl -lresolv|g" configure*
-rm -f configure
-autoconf
-%configure
+# FIXME configure should be fixed instead of having to work around
+# its brokenness...
+echo '#define HAVE_JSON_C 1' >>config.h
 %make CFLAGS="$CFLAGS"
 popd
 
@@ -304,6 +250,9 @@ export CFLAGS="$CFLAGS -DLDAP_DEPRECATED"
     --with-openssl=%{_prefix} \
     --with-randomdev=/dev/urandom \
     --with-geoip
+# FIXME configure should be fixed instead of having to work around
+# its brokenness...
+echo '#define HAVE_JSON_C 1' >>config.h
 
 make -C lib
 make -C bin/dig
@@ -332,6 +281,9 @@ make clean
     --with-dlz-odbc=no \
     --with-dlz-stub=yes \
     --with-geoip
+# FIXME configure should be fixed instead of having to work around
+# its brokenness...
+echo '#define HAVE_JSON_C 1' >>config.h
 
 # pkcs11 support requires a working backend, otherwise bind won't start
 # http://blogs.sun.com/janp/
@@ -339,24 +291,6 @@ make clean
 #--with-pkcs11 \
 
 %make -j1
-
-%if %{sdb_ldap}
-pushd zone2ldap
-# fix references to zone2ldap
-perl -pi -e "s|zone2ldap|zonetoldap|g" *
-    %{__cc} $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
-    -I../lib/isc/include -I../lib/isc/unix/include -I../lib/isc/pthreads/include -c zone2ldap.c
-    %{__cc} $CFLAGS $LDFLAGS -o zone2ldap zone2ldap.o ../lib/dns/libdns.a -lcrypto -lpthread \
-    ../lib/isc/libisc.a -lldap -llber -lresolv %{?gssapi:`krb5-config --libs gssapi`} -lxml2 -lGeoIP
-popd
-
-pushd ldap2zone
-    %{__cc} $CFLAGS -I../lib/dns/include -I../lib/dns/sec/dst/include \
-    -I../lib/isc/include -I../lib/isc/unix/include -I../lib/isc/pthreads/include -c ldap2zone.c
-    %{__cc} $CFLAGS $LDFLAGS -o ldap2zone ldap2zone.o ../lib/dns/libdns.a -lcrypto -lpthread \
-    ../lib/isc/libisc.a -lldap -llber -lresolv %{?_with_gssapi:`krb5-config --libs gssapi`} -lxml2 -lGeoIP
-popd
-%endif
 
 %if %{sdb_mysql}
 pushd contrib/sdb/mysql
@@ -389,25 +323,11 @@ install -d %{buildroot}/var/run/named
 
 ln -snf named %{buildroot}%{_sbindir}/lwresd
 
-install -m0755 contrib/named-bootconf/named-bootconf.sh %{buildroot}%{_sbindir}/named-bootconf
 install -m0755 contrib/queryperf/queryperf %{buildroot}%{_bindir}/
 cp contrib/queryperf/README README.queryperf
 
-install -m0755 contrib/query-loc-*/query-loc %{buildroot}%{_bindir}/
-install -m0644 contrib/query-loc-*/query-loc.1 %{buildroot}%{_mandir}/man1/
-cp contrib/query-loc-*/ADDRESSES ADDRESSES.query-loc
-cp contrib/query-loc-*/ALGO ALGO.query-loc
-cp contrib/query-loc-*/README README.query-loc
-cp contrib/query-loc-*/USAGE USAGE.query-loc
-
 install -m0755 named.init %{buildroot}%{_initrddir}/named
 install -m0644 named.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/named
-
-%if %{sdb_ldap}
-install -m0755 zone2ldap/zone2ldap %{buildroot}%{_bindir}/zonetoldap
-install -m0644 zone2ldap/zone2ldap.1 %{buildroot}%{_mandir}/man1/zonetoldap.1
-install -m0755 ldap2zone/ldap2zone %{buildroot}%{_bindir}/ldap2zone
-%endif
 
 %if %{sdb_mysql}
 install -m0755 contrib/sdb/mysql/zonetodb %{buildroot}%{_bindir}/
@@ -532,11 +452,13 @@ fi
 %postun
 %_postun_userdel named
 
+%files -n python-isc
+%{_prefix}/lib/python*/site-packages/isc*
+
 %files
 %doc README.urpmi
 %config(noreplace) %{_sysconfdir}/sysconfig/named
 %{_initrddir}/named
-%{_sbindir}/arpaname
 %{_sbindir}/ddns-confgen
 %{_sbindir}/dns-keygen
 %{_sbindir}/dnssec-checkds
@@ -550,10 +472,8 @@ fi
 %{_sbindir}/dnssec-signzone
 %{_sbindir}/dnssec-verify
 %{_sbindir}/genrandom
-%{_sbindir}/isc-hmac-fixup
 %{_sbindir}/lwresd
 %{_sbindir}/named
-%{_sbindir}/named-bootconf
 %{_sbindir}/named-checkconf
 %{_sbindir}/named-checkzone
 %{_sbindir}/named-compilezone
@@ -561,19 +481,22 @@ fi
 %{_sbindir}/nsec3hash
 %{_sbindir}/rndc
 %{_sbindir}/rndc-confgen
+%{_sbindir}/dnssec-cds
+%{_sbindir}/dnssec-keymgr
+%{_sbindir}/named-nzd2nzf
+%{_sbindir}/tsig-keygen
 %{_mandir}/man1/arpaname.1.*
 %{_mandir}/man5/named.conf.5*
 %{_mandir}/man5/rndc.conf.5*
 %{_mandir}/man8/ddns-confgen.8.*
 %{_mandir}/man8/dnssec-*.8*
 %{_mandir}/man8/genrandom.8.*
-%{_mandir}/man8/isc-hmac-fixup.8.*
-%{_mandir}/man8/lwresd.8*
 %{_mandir}/man8/named-*.8*
 %{_mandir}/man8/named.8*
 %{_mandir}/man8/nsec3hash.8.*
 %{_mandir}/man8/rndc.8*
 %{_mandir}/man8/rndc-confgen.8*
+%{_mandir}/man8/tsig-keygen.8*
 # the chroot
 %dir /var/lib/named
 %dir /var/lib/named/dev
@@ -618,7 +541,6 @@ fi
 %{_libdir}/*.a
 %{_mandir}/man1/bind9-config.1*
 %{_mandir}/man1/isc-config.sh.1*
-%{_mandir}/man3/lwres*.3*
 
 %files utils
 %{_bindir}/dig
@@ -626,31 +548,24 @@ fi
 %{_bindir}/nslookup
 %{_bindir}/nsupdate
 %{_bindir}/queryperf
-%{_bindir}/query-loc
+%{_bindir}/arpaname
+%{_bindir}/delv
+%{_bindir}/mdig
+%{_bindir}/named-rrchecker
+%{_mandir}/man1/delv.1.xz
+%{_mandir}/man1/mdig.1.xz
+%{_mandir}/man1/named-rrchecker.1.xz
 %{_mandir}/man1/host.1*
 %{_mandir}/man1/dig.1*
 %{_mandir}/man1/nslookup.1*
 %{_mandir}/man1/nsupdate.1*
-%{_mandir}/man1/query-loc.1*
-%if %{sdb_ldap}
-%{_bindir}/zonetoldap
-%{_bindir}/ldap2zone
-%{_mandir}/man1/zonetoldap.1*
-%endif
 %{_mandir}/man5/resolver.5*
 %{_mandir}/man5/resolv.5*
 
 %files doc
-%doc CHANGES README FAQ COPYRIGHT
-%if %{sdb_ldap}
-%doc contrib/sdb/ldap/README.ldap contrib/sdb/ldap/INSTALL.ldap
-%endif
+%doc CHANGES README COPYRIGHT
 %if %{sdb_mysql}
 %doc contrib/sdb/mysql/ChangeLog.mysql contrib/sdb/mysql/README.mysql
 %endif
 %doc doc/html doc/misc/
 %doc doc/dhcp-dynamic-dns-examples doc/chroot doc/trustix
-%doc *.query-loc *.queryperf
-%if %{sdb_ldap}
-%doc zone2ldap/zone2ldap.README ldap2zone/README.ldap2zone ldap2zone/dnszone-schema.txt
-%endif

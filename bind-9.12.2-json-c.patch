@@ -1,0 +1,32 @@
+diff -up bind-9.12.2-P1/configure.in.omv~ bind-9.12.2-P1/configure.in
+--- bind-9.12.2-P1/configure.in.omv~	2018-08-22 23:32:26.415175939 +0200
++++ bind-9.12.2-P1/configure.in	2018-08-22 23:32:31.740199890 +0200
+@@ -2653,10 +2653,7 @@ if test "X${have_libjson}" != "X"
+ then
+ 	CFLAGS="$CFLAGS $libjson_cflags"
+ 	AC_DEFINE(HAVE_JSON, 1, [Define if libjson was found])
+-	if test "X${have_libjson_c}" = Xyes
+-	then
+-		AC_DEFINE(HAVE_JSON_C, 1, [Define if json-c was found])
+-	fi
++	AC_DEFINE(HAVE_JSON_C, 1, [Define if json-c was found])
+ 	JSONSTATS=1
+ fi
+ AC_SUBST(JSONSTATS)
+diff -up bind-9.12.2-P1/configure.omv~ bind-9.12.2-P1/configure
+--- bind-9.12.2-P1/configure.omv~	2018-08-22 23:35:13.504924716 +0200
++++ bind-9.12.2-P1/configure	2018-08-22 23:35:22.730965908 +0200
+@@ -18004,13 +18004,8 @@ then
+ 	CFLAGS="$CFLAGS $libjson_cflags"
+ 
+ $as_echo "#define HAVE_JSON 1" >>confdefs.h
+-
+-	if test "X${have_libjson_c}" = Xyes
+-	then
+-
+ $as_echo "#define HAVE_JSON_C 1" >>confdefs.h
+ 
+-	fi
+ 	JSONSTATS=1
+ fi
+ 

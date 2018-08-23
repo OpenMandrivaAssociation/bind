@@ -1,6 +1,7 @@
---- bind-9.9.0/bin/dig/dighost.c.fallback-to-second-server.droplet	2011-12-07 18:23:28.000000000 +0100
-+++ bind-9.9.0/bin/dig/dighost.c	2012-03-01 02:10:51.984267314 +0100
-@@ -750,7 +750,7 @@ make_empty_lookup(void) {
+diff -up bind-9.12.2-P1/bin/dig/dighost.c.fallback-to-second-server.droplet bind-9.12.2-P1/bin/dig/dighost.c
+--- bind-9.12.2-P1/bin/dig/dighost.c.fallback-to-second-server.droplet	2018-08-22 23:04:52.804006413 +0200
++++ bind-9.12.2-P1/bin/dig/dighost.c	2018-08-22 23:07:56.555763191 +0200
+@@ -638,7 +638,7 @@ make_empty_lookup(void) {
  	looknew->identify = ISC_FALSE;
  	looknew->identify_previous_line = ISC_FALSE;
  	looknew->ignore = ISC_FALSE;
@@ -8,30 +9,32 @@
 +	looknew->servfail_stops = ISC_FALSE;
  	looknew->besteffort = ISC_TRUE;
  	looknew->dnssec = ISC_FALSE;
- 	looknew->nsid = ISC_FALSE;
---- bind-9.9.0/bin/dig/host.1.fallback-to-second-server.droplet	2009-07-11 03:12:45.000000000 +0200
-+++ bind-9.9.0/bin/dig/host.1	2012-03-01 02:10:51.984267314 +0100
-@@ -84,6 +84,9 @@ option switched on debugging traces and
- \fB\-v\fR
- enabled verbose output.
+ 	looknew->ednsflags = 0;
+diff -up bind-9.12.2-P1/bin/dig/host.1.fallback-to-second-server.droplet bind-9.12.2-P1/bin/dig/host.1
+--- bind-9.12.2-P1/bin/dig/host.1.fallback-to-second-server.droplet	2018-08-22 23:04:52.804006413 +0200
++++ bind-9.12.2-P1/bin/dig/host.1	2018-08-22 23:07:25.234634173 +0200
+@@ -112,6 +112,9 @@ Print debugging traces\&. Equivalent to
+ verbose option\&.
+ .RE
  .PP
 +The \fB-F\fR
 +options is used to force to don't go on the next server when the first one return a \fBSERVFAIL\fR.
 +.PP
- List mode is selected by the
- \fB\-l\fR
- option. This makes
---- bind-9.9.0/bin/dig/host.c.fallback-to-second-server.droplet	2011-03-11 07:11:20.000000000 +0100
-+++ bind-9.9.0/bin/dig/host.c	2012-03-01 02:10:51.984267314 +0100
-@@ -162,6 +162,7 @@ show_usage(void) {
+ \-i
+ .RS 4
+ Obsolete\&. Use the IP6\&.INT domain for reverse lookups of IPv6 addresses as defined in RFC1886 and deprecated in RFC4159\&. The default is to use IP6\&.ARPA as specified in RFC3596\&.
+diff -up bind-9.12.2-P1/bin/dig/host.c.fallback-to-second-server.droplet bind-9.12.2-P1/bin/dig/host.c
+--- bind-9.12.2-P1/bin/dig/host.c.fallback-to-second-server.droplet	2018-07-24 19:22:12.000000000 +0200
++++ bind-9.12.2-P1/bin/dig/host.c	2018-08-22 23:06:38.994443693 +0200
+@@ -158,6 +158,7 @@ show_usage(void) {
  "       -t specifies the query type\n"
  "       -T enables TCP/IP mode\n"
  "       -v enables verbose output\n"
 +"       -F Don't get next server when the first one got a SERVFAIL\n"
+ "       -V print version number and exit\n"
  "       -w specifies to wait forever for a reply\n"
  "       -W specifies how long to wait for a reply\n"
- "       -4 use IPv4 query transport only\n"
-@@ -621,6 +622,7 @@ pre_parse_args(int argc, char **argv) {
+@@ -632,6 +633,7 @@ pre_parse_args(int argc, char **argv) {
  		case 'c': break;
  		case 'd': break;
  		case 'i': break;
@@ -39,7 +42,7 @@
  		case 'l': break;
  		case 'n': break;
  		case 'r': break;
-@@ -671,6 +673,9 @@ parse_args(isc_boolean_t is_batchfile, i
+@@ -689,6 +691,9 @@ parse_args(isc_boolean_t is_batchfile, i
  			lookup->rdtypeset = ISC_TRUE;
  			fatalexit = 3;
  			break;
@@ -49,27 +52,28 @@
  		case 'v':
  		case 'd':
  			short_form = ISC_FALSE;
---- bind-9.9.0/bin/dig/nslookup.c.fallback-to-second-server.droplet	2011-12-17 00:01:16.000000000 +0100
-+++ bind-9.9.0/bin/dig/nslookup.c	2012-03-01 02:11:32.990269646 +0100
-@@ -57,7 +57,7 @@ static isc_boolean_t short_form = ISC_TR
+diff -up bind-9.12.2-P1/bin/dig/nslookup.c.fallback-to-second-server.droplet bind-9.12.2-P1/bin/dig/nslookup.c
+--- bind-9.12.2-P1/bin/dig/nslookup.c.fallback-to-second-server.droplet	2018-07-24 19:22:12.000000000 +0200
++++ bind-9.12.2-P1/bin/dig/nslookup.c	2018-08-22 23:06:09.330321496 +0200
+@@ -59,7 +59,7 @@ static isc_boolean_t short_form = ISC_TR
  	comments = ISC_TRUE, section_question = ISC_TRUE,
  	section_answer = ISC_TRUE, section_authority = ISC_TRUE,
  	section_additional = ISC_TRUE, recurse = ISC_TRUE,
--	aaonly = ISC_FALSE, nofail = ISC_TRUE;
-+	aaonly = ISC_FALSE, nofail = ISC_TRUE, fail = ISC_FALSE;
+-	aaonly = ISC_FALSE, nofail = ISC_TRUE,
++	aaonly = ISC_FALSE, nofail = ISC_TRUE, fail = ISC_FALSE,
+ 	default_lookups = ISC_TRUE, a_noanswer = ISC_FALSE;
  
  static isc_boolean_t interactive;
- 
-@@ -641,6 +641,8 @@ setoption(char *opt) {
+@@ -729,6 +729,8 @@ setoption(char *opt) {
  		usesearch = ISC_TRUE;
- 	} else if (strncasecmp(opt, "nosearch", 5) == 0) {
+ 	} else if (CHECKOPT("nosearch", 5)) {
  		usesearch = ISC_FALSE;
 +	} else if (strncasecmp(opt, "fail",6) == 0) {
 +		fail = ISC_TRUE;
- 	} else if (strncasecmp(opt, "sil", 3) == 0) {
+ 	} else if (CHECKOPT("sil", 3)) {
  		/* deprecation_msg = ISC_FALSE; */
- 	} else if (strncasecmp(opt, "fail", 3) == 0) {
-@@ -687,6 +689,7 @@ addlookup(char *opt) {
+ 	} else if (CHECKOPT("fail", 3)) {
+@@ -780,6 +782,7 @@ addlookup(char *opt) {
  		lookup->rdtype = rdtype;
  		lookup->rdtypeset = ISC_TRUE;
  	}

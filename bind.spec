@@ -5,16 +5,10 @@
 
 # default options
 %define sdb_mysql 0
-%define gssapi 1
+%bcond_without gssapi
 
 %{?_with_sdb_mysql: %{expand: %%global sdb_mysql 1}}
 %{?_without_sdb_mysql: %{expand: %%global sdb_mysql 0}}
-%{?_with_gssapi: %{expand: %%global gssapi 1}}
-%{?_without_gssapi: %{expand: %%global gssapi 0}}
-
-%if %{gssapi}
-%define gssapi 1
-%endif
 
 Summary:	A DNS (Domain Name System) server
 Name:		bind
@@ -66,8 +60,8 @@ BuildRequires:  file
 %if %{sdb_mysql}
 BuildRequires:	mysql-devel
 %endif
-%if %{gssapi}
-BuildRequires:	krb5-devel
+%if %{with gssapi}
+BuildRequires:	pkgconfig(krb5)
 %endif
 BuildRequires:	libcap-devel >= 2.10
 BuildRequires:	geoip-devel
@@ -268,7 +262,7 @@ make clean
     --enable-filter-aaaa \
     --enable-epoll \
     --with-openssl=%{_prefix} \
-%if %{gssapi}
+%if %{with gssapi}
     --with-gssapi=%{_prefix} --disable-isc-spnego \
 %endif
     --with-randomdev=/dev/urandom \

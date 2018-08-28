@@ -75,6 +75,7 @@ BuildRequires:	pkgconfig(libcrypto)
 BuildRequires:	pkgconfig(libssl)
 BuildRequires:	pkgconfig(json-c)
 BuildRequires:  readline-devel
+BuildRequires:	lmdb-devel
 BuildRequires:	rpm-helper
 
 Requires:	bind-utils >= %{version}-%{release}
@@ -487,6 +488,7 @@ fi
 %{_sbindir}/dnssec-cds
 %{_sbindir}/dnssec-keymgr
 %{_sbindir}/named-nzd2nzf
+%{_sbindir}/pkcs11-*
 %{_sbindir}/tsig-keygen
 %{_mandir}/man1/arpaname.1.*
 %{_mandir}/man5/named.conf.5*
@@ -497,6 +499,7 @@ fi
 %{_mandir}/man8/named-*.8*
 %{_mandir}/man8/named.8*
 %{_mandir}/man8/nsec3hash.8.*
+%{_mandir}/man8/pkcs11-*.8*
 %{_mandir}/man8/rndc.8*
 %{_mandir}/man8/rndc-confgen.8*
 %{_mandir}/man8/tsig-keygen.8*

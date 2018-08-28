@@ -71,6 +71,8 @@ BuildRequires:	postgresql-devel
 BuildRequires:	pkgconfig(libidn)
 BuildRequires:	pkgconfig(libxml-2.0)
 BuildRequires:	pkgconfig(openssl)
+BuildRequires:	pkgconfig(libcrypto)
+BuildRequires:	pkgconfig(libssl)
 BuildRequires:	pkgconfig(json-c)
 BuildRequires:  readline-devel
 BuildRequires:	rpm-helper
@@ -145,6 +147,7 @@ The bind-devel package contains the documentation for BIND.
 Summary:	Python bindings to the ISC library
 Group:		Development/Python
 BuildRequires:	pkgconfig(python3)
+BuildRequires:	python-ply
 
 %description -n python-isc
 Python bindings to the ISC library
@@ -237,14 +240,15 @@ export CFLAGS="$CFLAGS -DLDAP_DEPRECATED"
 
 # threading is evil for the host command
 %configure \
-    --localstatedir=/var \
-    --disable-openssl-version-check \
-    --disable-threads \
-    --enable-largefile \
-    --enable-ipv6 \
-    --with-openssl=%{_prefix} \
-    --with-randomdev=/dev/urandom \
-    --with-geoip
+	--localstatedir=/var \
+	--disable-openssl-version-check \
+	--disable-threads \
+	--enable-largefile \
+	--enable-ipv6 \
+	--with-openssl=%{_prefix} \
+	--with-libidn2 \
+	--with-randomdev=/dev/urandom \
+	--with-geoip
 # FIXME configure should be fixed instead of having to work around
 # its brokenness...
 echo '#define HAVE_JSON_C 1' >>config.h
@@ -255,29 +259,31 @@ make -C bin/dig DESTDIR="`pwd`" install
 make clean
 
 %configure \
-    --localstatedir=/var \
-    --disable-openssl-version-check \
-    --enable-threads \
-    --enable-largefile \
-    --enable-ipv6 \
-    --enable-filter-aaaa \
-    --enable-epoll \
-    --with-openssl=%{_prefix} \
+	--localstatedir=/var \
+	--disable-openssl-version-check \
+	--enable-threads \
+	--enable-largefile \
+	--enable-ipv6 \
+	--enable-filter-aaaa \
+	--enable-epoll \
+	--with-openssl=%{_prefix} \
+	--with-pkcs11 \
+	--with-libidn2 \
 %if %{with gssapi}
-    --with-gssapi=%{_prefix} --disable-isc-spnego \
+	--with-gssapi=%{_prefix} --disable-isc-spnego \
 %else
-    --without-gssapi \
+	--without-gssapi \
 %endif
-    --with-randomdev=/dev/urandom \
-    --with-libxml2=yes \
-    --with-dlz-postgres=yes \
-    --with-dlz-mysql=yes \
-    --with-dlz-bdb=no \
-    --with-dlz-filesystem=yes \
-    --with-dlz-ldap=yes \
-    --with-dlz-odbc=no \
-    --with-dlz-stub=yes \
-    --with-geoip
+	--with-randomdev=/dev/urandom \
+	--with-libxml2=yes \
+	--with-dlz-postgres=yes \
+	--with-dlz-mysql=yes \
+	--with-dlz-bdb=no \
+	--with-dlz-filesystem=yes \
+	--with-dlz-ldap=yes \
+	--with-dlz-odbc=no \
+	--with-dlz-stub=yes \
+	--with-geoip
 # FIXME configure should be fixed instead of having to work around
 # its brokenness...
 echo '#define HAVE_JSON_C 1' >>config.h

@@ -68,7 +68,7 @@ BuildRequires:	geoip-devel
 BuildRequires:	mysql-devel
 BuildRequires:	openldap-devel
 BuildRequires:	postgresql-devel
-BuildRequires:	pkgconfig(libidn)
+BuildRequires:	pkgconfig(libidn2)
 BuildRequires:	pkgconfig(libxml-2.0)
 BuildRequires:	pkgconfig(openssl)
 BuildRequires:	pkgconfig(libcrypto)

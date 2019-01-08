@@ -294,7 +294,7 @@ echo '#define HAVE_JSON_C 1' >>config.h
 # http://sourceforge.net/projects/opencryptoki
 #--with-pkcs11 \
 
-make_build -j1
+%make_build -j1
 
 %if %{sdb_mysql}
 cd contrib/sdb/mysql

@@ -18,7 +18,7 @@ Version:	9.12.2
 Release:	1.%{plevel}.0
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.gz
 %else
-Release:	2
+Release:	3
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz
 %endif
 License:	Distributable
@@ -151,7 +151,7 @@ BuildRequires:	pkgconfig(python3)
 BuildRequires:	python-ply
 
 %description -n python-isc
-Python bindings to the ISC library
+Python bindings to the ISC library.
 
 %prep
 
@@ -181,7 +181,7 @@ mkdir -p m4
 cp %{SOURCE4} named.init
 # fix https://qa.mandriva.com/show_bug.cgi?id=62829
 # so..., libgost.so needs to be in the chroot (ugly..., and will break backporting, well...)
-OPENSSL_ENGINESDIR=`grep '^#define ENGINESDIR' %{multiarch_includedir}/openssl/opensslconf.h | cut -d\" -f2 | sed -e 's/^\///'`
+OPENSSL_ENGINESDIR=$(grep '^#define ENGINESDIR' %{multiarch_includedir}/openssl/opensslconf.h | cut -d\" -f2 | sed -e 's/^\///')
 perl -pi -e "s|_OPENSSL_ENGINESDIR_|$OPENSSL_ENGINESDIR|g" named.init
 
 cp %{SOURCE6} named.sysconfig
@@ -212,8 +212,8 @@ find . -type f|xargs file|grep 'text'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
 %build
 %serverbuild
 # it does not work with -fPIE and someone added that to the serverbuild macro...
-CFLAGS=`echo $CFLAGS|sed -e 's|-fPIE||g'`
-CXXFLAGS=`echo $CXXFLAGS|sed -e 's|-fPIE||g'`
+CFLAGS=$(echo $CFLAGS|sed -e 's|-fPIE||g')
+CXXFLAGS=$(echo $CXXFLAGS|sed -e 's|-fPIE||g')
 
 export CC=%{__cc}
 export CXX=%{__cxx}
@@ -234,7 +234,7 @@ autoconf
 # FIXME configure should be fixed instead of having to work around
 # its brokenness...
 echo '#define HAVE_JSON_C 1' >>config.h
-%make CFLAGS="$CFLAGS"
+%make_build CFLAGS="$CFLAGS"
 popd
 
 export CFLAGS="$CFLAGS -DLDAP_DEPRECATED"
@@ -256,7 +256,7 @@ echo '#define HAVE_JSON_C 1' >>config.h
 
 make -C lib
 make -C bin/dig
-make -C bin/dig DESTDIR="`pwd`" install 
+make -C bin/dig DESTDIR="$(pwd)" install 
 make clean
 
 %configure \
@@ -294,17 +294,17 @@ echo '#define HAVE_JSON_C 1' >>config.h
 # http://sourceforge.net/projects/opencryptoki
 #--with-pkcs11 \
 
-%make -j1
+make_build -j1
 
 %if %{sdb_mysql}
-pushd contrib/sdb/mysql
+cd contrib/sdb/mysql
 %{__cc} $CFLAGS -I%{_includedir}/mysql -I../../../lib/dns/include -I../../../lib/dns/sec/dst/include \
   -I../../../lib/isc/include -I../../../lib/isc/unix/include -I../../../lib/isc/pthreads/include \
   -c zonetodb.c
 %{_cc} $CFLAGS $LDFLAGS -o zonetodb zonetodb.o \
   ../../../lib/dns/libdns.a -lcrypto -lpthread ../../../lib/isc/libisc.a \
-  -lmysqlclient -lresolv %{?_with_gssapi:`krb5-config --libs gssapi`} -lxml2 -lGeoIP
-popd
+  -lmysqlclient -lresolv %{?_with_gssapi:$(krb5-config --libs gssapi)} -lxml2 -lGeoIP
+cd -
 %endif
 
 %{__cc} $CFLAGS -o dns-keygen keygen.c
@@ -314,16 +314,16 @@ popd
 #make check
 
 %install
-pushd doc
+cd doc
     rm -rf html
-popd
+cd -
 
 # make some directories
 install -d %{buildroot}%{_initrddir}
 install -d %{buildroot}%{_sysconfdir}/sysconfig
 install -d %{buildroot}/var/run/named 
 
-%makeinstall_std
+%make_install
 
 ln -snf named %{buildroot}%{_sbindir}/lwresd
 
@@ -390,12 +390,12 @@ install -m0644 man5/resolver.5 %{buildroot}%{_mandir}/man5/
 ln -s resolver.5 %{buildroot}%{_mandir}/man5/resolv.5
 
 # the following 3 lines is needed to make it short-circuit compliant.
-pushd doc
+cd doc
     rm -rf html
-popd
+cd -
 
 install -d doc/html
-cp -f `find . -type f |grep html |sed -e 's#\/%{name}-%{version}##'|grep -v contrib` doc/html 
+cp -f $(find . -type f |grep html |sed -e 's#\/%{name}-%{version}##'|grep -v contrib) doc/html 
 
 cat > README.urpmi << EOF
 The most significant changes starting from the bind-9.3.2-5mdk package:
@@ -415,7 +415,7 @@ touch %{buildroot}/var/lib/named/var/named/dynamic/managed-keys.bind
 %_pre_useradd named /var/lib/named /bin/false
 
 # adjust home dir location if needed 
-if [ "`getent passwd named | awk -F: '{print $6}'`" == "/var/named" ]; then
+if [ "$(getent passwd named | awk -F: '{print $6}')" == "/var/named" ]; then
     usermod -d /var/lib/named named
 fi
 
@@ -439,7 +439,7 @@ if [ -x %{_sbindir}/bind-chroot.sh ]; then
     fi
 fi
 
-DATE=`date +%%Y%%m%%d%%j%%S`
+DATE=$(date +%%Y%%m%%d%%j%%S)
 for f in named.conf rndc.conf rndc.key; do
     # move away files to prepare for softlinks
     if [ -f /etc/$f -a ! -h /etc/$f ]; then mv -vf /etc/$f /etc/$f.$DATE; fi
@@ -449,7 +449,7 @@ done
 
 %post
 if grep -q "_MY_KEY_" /var/lib/named/etc/rndc.conf /var/lib/named/etc/rndc.key; then
-    MYKEY="`%{_sbindir}/dns-keygen`"
+    MYKEY="$(%{_sbindir}/dns-keygen)"
     perl -pi -e "s|_MY_KEY_|$MYKEY|g" /var/lib/named/etc/rndc.conf /var/lib/named/etc/rndc.key
 fi
 

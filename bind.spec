@@ -1,7 +1,9 @@
 %define Werror_cflags -Wformat
 %define _disable_lto 1
+# For plugins
+%global _disable_ld_no_undefined 1
 
-%define plevel P1
+%define plevel %{nil}
 
 # default options
 %define sdb_mysql 0
@@ -13,12 +15,12 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Epoch:		1
-Version:	9.12.2
+Version:	9.13.6
 %if "%plevel" != ""
 Release:	1.%{plevel}.1
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.gz
 %else
-Release:	3
+Release:	1
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz
 %endif
 License:	Distributable
@@ -48,13 +50,11 @@ Source111:	rndc.key
 Source112:	trusted_networks_acl.conf
 Source113:	named.iscdlv.key
 Patch0:		bind-fallback-to-second-server.diff
-Patch1:		bind-queryperf_fix.diff
 Patch2:		bind-9.7.3-link.patch
 Patch3:		bind-9.12.2-json-c.patch
 Patch102:	bind-9.3.0rc2-sdb_mysql.patch
 Patch205:	bind-9.3.2-prctl_set_dumpable.patch
 Patch209:	bind-9.9-dlz-64bit.patch
-Patch218:	bind-96-libtool2.patch
 
 BuildRequires:  file
 %if %{sdb_mysql}
@@ -162,7 +162,6 @@ Python bindings to the ISC library.
 %endif
 
 %patch0 -p1 -b .fallback-to-second-server.droplet
-%patch1 -p1 -b .queryperf_fix.droplet
 %patch2 -p1 -b .link
 
 %if %{sdb_mysql}
@@ -172,11 +171,8 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 %patch102 -p1 -b .sdb_mysql.droplet
 %endif
 
-%patch205 -p0 -b .prctl_set_dumpable.droplet
+%patch205 -p1 -b .prctl_set_dumpable.droplet
 %patch209 -p1 -b .64bit
-
-mkdir -p m4
-%patch218 -p1 -b .libtool2
 
 cp %{SOURCE4} named.init
 # fix https://qa.mandriva.com/show_bug.cgi?id=62829
@@ -223,20 +219,6 @@ export STD_CDEFINES="$CPPFLAGS"
 export WANT_AUTOCONF_2_5=1
 libtoolize --copy --force; aclocal -I m4 --force; autoheader --force; autoconf --force
 
-# (oe) make queryperf from the contrib _before_ bind..., makes it
-# easier to determine if it builds or not, it saves time...
-pushd contrib/queryperf
-export WANT_AUTOCONF_2_5=1
-rm -f configure
-autoconf
-
-%configure
-# FIXME configure should be fixed instead of having to work around
-# its brokenness...
-echo '#define HAVE_JSON_C 1' >>config.h
-%make_build CFLAGS="$CFLAGS"
-popd
-
 export CFLAGS="$CFLAGS -DLDAP_DEPRECATED"
 
 # threading is evil for the host command
@@ -267,8 +249,8 @@ make clean
 	--enable-ipv6 \
 	--enable-filter-aaaa \
 	--enable-epoll \
+	--enable-native-pkcs11 \
 	--with-openssl=%{_prefix} \
-	--with-pkcs11 \
 	--with-libidn2 \
 %if %{with gssapi}
 	--with-gssapi=%{_prefix} --disable-isc-spnego \
@@ -288,11 +270,6 @@ make clean
 # FIXME configure should be fixed instead of having to work around
 # its brokenness...
 echo '#define HAVE_JSON_C 1' >>config.h
-
-# pkcs11 support requires a working backend, otherwise bind won't start
-# http://blogs.sun.com/janp/
-# http://sourceforge.net/projects/opencryptoki
-#--with-pkcs11 \
 
 %make_build -j1
 
@@ -326,9 +303,6 @@ install -d %{buildroot}/var/run/named
 %make_install
 
 ln -snf named %{buildroot}%{_sbindir}/lwresd
-
-install -m0755 contrib/queryperf/queryperf %{buildroot}%{_bindir}/
-cp contrib/queryperf/README README.queryperf
 
 install -m0755 named.init %{buildroot}%{_initrddir}/named
 install -m0644 named.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/named
@@ -475,7 +449,6 @@ fi
 %{_sbindir}/dnssec-settime
 %{_sbindir}/dnssec-signzone
 %{_sbindir}/dnssec-verify
-%{_sbindir}/genrandom
 %{_sbindir}/lwresd
 %{_sbindir}/named
 %{_sbindir}/named-checkconf
@@ -490,12 +463,13 @@ fi
 %{_sbindir}/named-nzd2nzf
 %{_sbindir}/pkcs11-*
 %{_sbindir}/tsig-keygen
+%{_libdir}/filter-aaaa.so
 %{_mandir}/man1/arpaname.1.*
 %{_mandir}/man5/named.conf.5*
 %{_mandir}/man5/rndc.conf.5*
 %{_mandir}/man8/ddns-confgen.8.*
 %{_mandir}/man8/dnssec-*.8*
-%{_mandir}/man8/genrandom.8.*
+%{_mandir}/man8/filter-aaaa.8*
 %{_mandir}/man8/named-*.8*
 %{_mandir}/man8/named.8*
 %{_mandir}/man8/nsec3hash.8.*
@@ -553,7 +527,6 @@ fi
 %{_bindir}/host
 %{_bindir}/nslookup
 %{_bindir}/nsupdate
-%{_bindir}/queryperf
 %{_bindir}/arpaname
 %{_bindir}/delv
 %{_bindir}/mdig

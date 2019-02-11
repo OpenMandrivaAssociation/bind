@@ -1,6 +1,7 @@
---- bin/named/unix/os.c	2008-11-14 06:08:48.000000000 +0100
-+++ bin/named/unix/os.c.oden	2008-12-03 12:41:55.000000000 +0100
-@@ -330,6 +330,10 @@ linux_minprivs(void) {
+diff -up bind-9.13.6/bin/named/unix/os.c.prctl_set_dumpable.droplet bind-9.13.6/bin/named/unix/os.c
+--- bind-9.13.6/bin/named/unix/os.c.prctl_set_dumpable.droplet	2019-02-11 22:04:19.321428633 +0100
++++ bind-9.13.6/bin/named/unix/os.c	2019-02-11 22:05:05.790137311 +0100
+@@ -184,6 +184,10 @@ linux_initialprivs(void) {
  
  	linux_setcaps(caps);
  
@@ -8,6 +9,6 @@
 +	 */
 +	prctl(PR_SET_DUMPABLE,1,0,0,0);
 +
- #ifdef HAVE_LIBCAP
  	FREE_CAP;
- #endif
+ }
+ 

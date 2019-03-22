@@ -15,7 +15,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Epoch:		1
-Version:	9.13.7
+Version:	9.14.0
 %if "%plevel" != ""
 Release:	1.%{plevel}.1
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.gz
@@ -463,7 +463,7 @@ fi
 %{_sbindir}/named-nzd2nzf
 %{_sbindir}/pkcs11-*
 %{_sbindir}/tsig-keygen
-%{_libdir}/filter-aaaa.so
+%{_libdir}/named/filter-aaaa.so
 %{_mandir}/man1/arpaname.1.*
 %{_mandir}/man5/named.conf.5*
 %{_mandir}/man5/rndc.conf.5*

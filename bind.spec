@@ -15,7 +15,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Epoch:		1
-Version:	9.15.0
+Version:	9.15.3
 %if "%plevel" != ""
 Release:	0.%{plevel}.1
 Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.gz
@@ -515,12 +515,8 @@ fi
 %config(noreplace) /var/lib/named/var/named/named.ca
 
 %files devel
-%{_bindir}/isc-config.sh
-%{_bindir}/bind9-config
 %{_includedir}/*
 %{_libdir}/*.a
-%{_mandir}/man1/bind9-config.1*
-%{_mandir}/man1/isc-config.sh.1*
 
 %files utils
 %{_bindir}/dig

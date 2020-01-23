@@ -74,6 +74,7 @@ BuildRequires:	pkgconfig(openssl)
 BuildRequires:	pkgconfig(libcrypto)
 BuildRequires:	pkgconfig(libssl)
 BuildRequires:	pkgconfig(json-c)
+BuildRequires:	pkgconfig(libuv)
 BuildRequires:  readline-devel
 BuildRequires:	lmdb-devel
 BuildRequires:	rpm-helper

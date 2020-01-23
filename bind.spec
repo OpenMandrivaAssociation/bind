@@ -15,13 +15,13 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Epoch:		1
-Version:	9.15.3
+Version:	9.15.8
 %if "%plevel" != ""
 Release:	0.%{plevel}.1
-Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.gz
+Source0:	http://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.xz
 %else
-Release:	2
-Source0:	ftp://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.gz
+Release:	1
+Source0:	http://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.xz
 %endif
 License:	Distributable
 Group:		System/Servers
@@ -527,9 +527,9 @@ fi
 %{_bindir}/delv
 %{_bindir}/mdig
 %{_bindir}/named-rrchecker
-%{_mandir}/man1/delv.1.xz
-%{_mandir}/man1/mdig.1.xz
-%{_mandir}/man1/named-rrchecker.1.xz
+%{_mandir}/man1/delv.1*
+%{_mandir}/man1/mdig.1*
+%{_mandir}/man1/named-rrchecker.1*
 %{_mandir}/man1/host.1*
 %{_mandir}/man1/dig.1*
 %{_mandir}/man1/nslookup.1*

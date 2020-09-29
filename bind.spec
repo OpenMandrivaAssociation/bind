@@ -20,7 +20,7 @@ Version:	9.15.8
 Release:	0.%{plevel}.1
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.xz
 %else
-Release:	1
+Release:	2
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.xz
 %endif
 License:	Distributable
@@ -63,7 +63,7 @@ BuildRequires:	mysql-devel
 %if %{with gssapi}
 BuildRequires:	pkgconfig(krb5)
 %endif
-BuildRequires:	libcap-devel >= 2.10
+BuildRequires:	pkgconfig(libcap)
 BuildRequires:	geoip-devel
 BuildRequires:	mysql-devel
 BuildRequires:	openldap-devel
@@ -75,7 +75,7 @@ BuildRequires:	pkgconfig(libcrypto)
 BuildRequires:	pkgconfig(libssl)
 BuildRequires:	pkgconfig(json-c)
 BuildRequires:	pkgconfig(libuv)
-BuildRequires:  readline-devel
+BuildRequires:  pkgconfig(readline)
 BuildRequires:	lmdb-devel
 BuildRequires:	rpm-helper
 

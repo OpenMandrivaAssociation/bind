@@ -1,3 +1,4 @@
+%define debug_package %{nil}
 %define Werror_cflags -Wformat
 %define _disable_lto 1
 # For plugins

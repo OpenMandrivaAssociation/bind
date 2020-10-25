@@ -65,6 +65,8 @@ BuildRequires:	mysql-devel
 %if %{with gssapi}
 BuildRequires:	pkgconfig(krb5)
 %endif
+BuildRequires:	libtool
+BuildRequires:	libltdl-devel
 BuildRequires:	pkgconfig(libcap)
 BuildRequires:	geoip-devel
 BuildRequires:	mysql-devel

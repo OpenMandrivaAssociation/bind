@@ -1,7 +1,7 @@
-diff -up bind-9.13.6/bin/dig/dighost.c.fallback-to-second-server.droplet bind-9.13.6/bin/dig/dighost.c
---- bind-9.13.6/bin/dig/dighost.c.fallback-to-second-server.droplet	2019-02-11 21:55:07.540007719 +0100
-+++ bind-9.13.6/bin/dig/dighost.c	2019-02-11 21:57:56.539588390 +0100
-@@ -602,7 +602,7 @@ make_empty_lookup(void) {
+diff -up bind-9.17.6/bin/dig/dighost.c.fallback-to-second-server.droplet bind-9.17.6/bin/dig/dighost.c
+--- bind-9.17.6/bin/dig/dighost.c.fallback-to-second-server.droplet	2020-10-12 13:10:30.609939011 +0200
++++ bind-9.17.6/bin/dig/dighost.c	2020-10-25 02:03:28.727114752 +0100
+@@ -637,7 +637,7 @@ make_empty_lookup(void) {
  	looknew->identify = false;
  	looknew->identify_previous_line = false;
  	looknew->ignore = false;
@@ -10,39 +10,27 @@ diff -up bind-9.13.6/bin/dig/dighost.c.fallback-to-second-server.droplet bind-9.
  	looknew->besteffort = true;
  	looknew->dnssec = false;
  	looknew->ednsflags = 0;
-diff -up bind-9.13.6/bin/dig/host.1.fallback-to-second-server.droplet bind-9.13.6/bin/dig/host.1
---- bind-9.13.6/bin/dig/host.1.fallback-to-second-server.droplet	2019-02-11 21:55:07.540007719 +0100
-+++ bind-9.13.6/bin/dig/host.1	2019-02-11 21:58:56.025496372 +0100
-@@ -112,6 +112,9 @@ Print debugging traces\&. Equivalent to
- verbose option\&.
- .RE
- .PP
-+The \fB-F\fR
-+options is used to force to don't go on the next server when the first one return a \fBSERVFAIL\fR.
-+.PP
- \-l
- .RS 4
- List zone: The
-diff -up bind-9.13.6/bin/dig/host.c.fallback-to-second-server.droplet bind-9.13.6/bin/dig/host.c
---- bind-9.13.6/bin/dig/host.c.fallback-to-second-server.droplet	2019-02-11 21:55:07.540007719 +0100
-+++ bind-9.13.6/bin/dig/host.c	2019-02-11 22:00:17.887745634 +0100
-@@ -143,6 +143,7 @@ show_usage(void) {
- "       -c specifies query class for non-IN data\n"
- "       -C compares SOA records on authoritative nameservers\n"
- "       -d is equivalent to -v\n"
-+"       -F Don't get next server when the first one got a SERVFAIL\n"
- "       -l lists all hosts in a domain, using AXFR\n"
- "       -m set memory debugging flag (trace|record|usage)\n"
- "       -N changes the number of dots allowed before root lookup is done\n"
-@@ -633,6 +634,7 @@ pre_parse_args(int argc, char **argv) {
- 			debugging = true;
+diff -up bind-9.17.6/bin/dig/host.c.fallback-to-second-server.droplet bind-9.17.6/bin/dig/host.c
+--- bind-9.17.6/bin/dig/host.c.fallback-to-second-server.droplet	2020-10-12 13:10:30.609939011 +0200
++++ bind-9.17.6/bin/dig/host.c	2020-10-25 02:04:37.239908538 +0100
+@@ -117,6 +117,7 @@ show_usage(void) {
+ 		"       -c specifies query class for non-IN data\n"
+ 		"       -C compares SOA records on authoritative nameservers\n"
+ 		"       -d is equivalent to -v\n"
++		"       -F Don't use next server if the first one got a SERVFAIL\n"
+ 		"       -l lists all hosts in a domain, using AXFR\n"
+ 		"       -m set memory debugging flag (trace|record|usage)\n"
+ 		"       -N changes the number of dots allowed before root "
+@@ -637,6 +638,8 @@ pre_parse_args(int argc, char **argv) {
  			break;
- 		case 'i': break;
-+		case 'F': break;
- 		case 'l': break;
- 		case 'n': break;
- 		case 'N': break;
-@@ -679,6 +681,9 @@ parse_args(bool is_batchfile, int argc,
+ 		case 'i':
+ 			break;
++		case 'F':
++			break;
+ 		case 'l':
+ 			break;
+ 		case 'n':
+@@ -698,6 +701,9 @@ parse_args(bool is_batchfile, int argc,
  
  	while ((c = isc_commandline_parse(argc, argv, optstring)) != -1) {
  		switch (c) {
@@ -52,28 +40,28 @@ diff -up bind-9.13.6/bin/dig/host.c.fallback-to-second-server.droplet bind-9.13.
  		case 'l':
  			lookup->tcp_mode = true;
  			lookup->rdtype = dns_rdatatype_axfr;
-diff -up bind-9.13.6/bin/dig/nslookup.c.fallback-to-second-server.droplet bind-9.13.6/bin/dig/nslookup.c
---- bind-9.13.6/bin/dig/nslookup.c.fallback-to-second-server.droplet	2019-02-11 21:55:07.541007734 +0100
-+++ bind-9.13.6/bin/dig/nslookup.c	2019-02-11 22:02:11.211474589 +0100
-@@ -61,7 +61,7 @@ static bool short_form = true,
- 	comments = true, section_question = true,
- 	section_answer = true, section_authority = true,
- 	section_additional = true, recurse = true,
--	aaonly = false, nofail = true,
-+	aaonly = false, nofail = true, fail = false,
- 	default_lookups = true, a_noanswer = false;
+diff -up bind-9.17.6/bin/dig/nslookup.c.fallback-to-second-server.droplet bind-9.17.6/bin/dig/nslookup.c
+--- bind-9.17.6/bin/dig/nslookup.c.fallback-to-second-server.droplet	2020-10-25 02:03:28.728114763 +0100
++++ bind-9.17.6/bin/dig/nslookup.c	2020-10-25 02:05:47.660722086 +0100
+@@ -43,7 +43,7 @@ static bool short_form = true, tcpmode =
+ 	    identify = false, stats = true, comments = true,
+ 	    section_question = true, section_answer = true,
+ 	    section_authority = true, section_additional = true, recurse = true,
+-	    aaonly = false, nofail = true, default_lookups = true,
++	    aaonly = false, nofail = true, fail = false, default_lookups = true,
+ 	    a_noanswer = false;
  
  static bool interactive;
-@@ -733,9 +733,10 @@ setoption(char *opt) {
+@@ -715,9 +715,10 @@ setoption(char *opt) {
  		usesearch = false;
  	} else if (CHECKOPT("sil", 3)) {
  		/* deprecation_msg = false; */
 -	} else if (CHECKOPT("fail", 3)) {
-+	} else if (CHECKOPT("fail",4)) {
++	} else if (CHECKOPT("fail", 4)) {
 +		fail = true;
- 		nofail=false;
+ 		nofail = false;
 -	} else if (CHECKOPT("nofail", 5)) {
 +	} else if (CHECKOPT("nofail", 6)) {
- 		nofail=true;
+ 		nofail = true;
  	} else if (strncasecmp(opt, "ndots=", 6) == 0) {
  		set_ndots(&opt[6]);

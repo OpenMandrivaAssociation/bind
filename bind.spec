@@ -16,12 +16,12 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Epoch:		1
-Version:	9.15.8
+Version:	9.17.6
 %if "%plevel" != ""
 Release:	0.%{plevel}.1
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.xz
 %else
-Release:	2
+Release:	1
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.xz
 %endif
 License:	Distributable
@@ -51,11 +51,12 @@ Source111:	rndc.key
 Source112:	trusted_networks_acl.conf
 Source113:	named.iscdlv.key
 Patch0:		bind-fallback-to-second-server.diff
-Patch2:		bind-9.7.3-link.patch
+#Patch2:		bind-9.7.3-link.patch
 Patch3:		bind-9.12.2-json-c.patch
 Patch102:	bind-9.3.0rc2-sdb_mysql.patch
 Patch205:	bind-9.3.2-prctl_set_dumpable.patch
 Patch209:	bind-9.9-dlz-64bit.patch
+Patch210:	bind-9.17.6-system-ltdl.patch
 
 BuildRequires:  file
 %if %{sdb_mysql}
@@ -146,17 +147,7 @@ Group:		Books/Other
 %description	doc
 The bind-devel package contains the documentation for BIND.
 
-%package -n python-isc
-Summary:	Python bindings to the ISC library
-Group:		Development/Python
-BuildRequires:	pkgconfig(python3)
-BuildRequires:	python-ply
-
-%description -n python-isc
-Python bindings to the ISC library.
-
 %prep
-
 %if "%plevel" != ""
 %setup -q  -n %{name}-%{version}-%{plevel} -a2 -a3 -a12
 %else
@@ -164,7 +155,7 @@ Python bindings to the ISC library.
 %endif
 
 %patch0 -p1 -b .fallback-to-second-server.droplet
-%patch2 -p1 -b .link
+#patch2 -p1 -b .link
 
 %if %{sdb_mysql}
 mv mysql-bind-0.1 contrib/sdb/mysql
@@ -175,6 +166,7 @@ mv mysql-bind-0.1 contrib/sdb/mysql
 
 %patch205 -p1 -b .prctl_set_dumpable.droplet
 %patch209 -p1 -b .64bit
+%patch210 -p1 -b .systemltdl~
 
 cp %{SOURCE4} named.init
 # fix https://qa.mandriva.com/show_bug.cgi?id=62829
@@ -210,8 +202,8 @@ find . -type f|xargs file|grep 'text'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
 %build
 %serverbuild
 # it does not work with -fPIE and someone added that to the serverbuild macro...
-CFLAGS=$(echo $CFLAGS|sed -e 's|-fPIE||g')
-CXXFLAGS=$(echo $CXXFLAGS|sed -e 's|-fPIE||g')
+CFLAGS=$(echo %{optflags}|sed -e 's|-fPIE||g')
+CXXFLAGS=$(echo %{optflags}|sed -e 's|-fPIE||g')
 
 export CC=%{__cc}
 export CXX=%{__cxx}
@@ -219,7 +211,8 @@ export CPPFLAGS="$CPPFLAGS -DDIG_SIGCHASE"
 export STD_CDEFINES="$CPPFLAGS"
 
 export WANT_AUTOCONF_2_5=1
-libtoolize --copy --force; aclocal -I m4 --force; autoheader --force; autoconf --force
+rm m4/ltdl.m4
+libtoolize --force; aclocal -I m4 --force; autoheader --force; automake -a; autoconf --force
 
 export CFLAGS="$CFLAGS -DLDAP_DEPRECATED"
 
@@ -365,27 +358,9 @@ install -m0644 named.cache.tmp %{buildroot}/var/lib/named/var/named/named.ca
 install -m0644 man5/resolver.5 %{buildroot}%{_mandir}/man5/
 ln -s resolver.5 %{buildroot}%{_mandir}/man5/resolv.5
 
-# the following 3 lines is needed to make it short-circuit compliant.
-cd doc
-    rm -rf html
-cd -
-
-install -d doc/html
-cp -f $(find . -type f |grep html |sed -e 's#\/%{name}-%{version}##'|grep -v contrib) doc/html 
-
-cat > README.urpmi << EOF
-The most significant changes starting from the bind-9.3.2-5mdk package:
-
- o Installs in a chroot environment per default (/var/lib/named) for 
-   security measures.
-
- o Acts as a caching only resolver per default, ip addresses that should be
-   allowed to use recursive lookups must be defined in the 
-   /var/lib/named/etc/trusted_networks_acl.conf file.
-EOF
-
 # this is just sick...
 touch %{buildroot}/var/lib/named/var/named/dynamic/managed-keys.bind
+rm -rf %{buildroot}$RPM_BUILD_DIR
 
 %pre
 %_pre_useradd named /var/lib/named /bin/false
@@ -432,50 +407,38 @@ fi
 %postun
 %_postun_userdel named
 
-%files -n python-isc
-%{_prefix}/lib/python*/site-packages/isc*
-
 %files
-%doc README.urpmi
 %config(noreplace) %{_sysconfdir}/sysconfig/named
 %{_initrddir}/named
 %{_sbindir}/ddns-confgen
 %{_sbindir}/dns-keygen
-%{_sbindir}/dnssec-checkds
-%{_sbindir}/dnssec-coverage
-%{_sbindir}/dnssec-dsfromkey
-%{_sbindir}/dnssec-importkey
-%{_sbindir}/dnssec-keyfromlabel
-%{_sbindir}/dnssec-keygen
-%{_sbindir}/dnssec-revoke
-%{_sbindir}/dnssec-settime
-%{_sbindir}/dnssec-signzone
-%{_sbindir}/dnssec-verify
 %{_sbindir}/lwresd
 %{_sbindir}/named
-%{_sbindir}/named-checkconf
-%{_sbindir}/named-checkzone
-%{_sbindir}/named-compilezone
-%{_sbindir}/named-journalprint
-%{_sbindir}/nsec3hash
 %{_sbindir}/rndc
 %{_sbindir}/rndc-confgen
-%{_sbindir}/dnssec-cds
-%{_sbindir}/dnssec-keymgr
-%{_sbindir}/named-nzd2nzf
-%{_sbindir}/pkcs11-*
 %{_sbindir}/tsig-keygen
-%{_libdir}/named/filter-aaaa.so
+%{_bindir}/dnssec-cds
+%{_bindir}/dnssec-dsfromkey
+%{_bindir}/dnssec-importkey
+%{_bindir}/dnssec-keyfromlabel
+%{_bindir}/dnssec-keygen
+%{_bindir}/dnssec-revoke
+%{_bindir}/dnssec-settime
+%{_bindir}/dnssec-signzone
+%{_bindir}/dnssec-verify
+%{_bindir}/named-checkconf
+%{_bindir}/named-checkzone
+%{_bindir}/named-compilezone
+%{_bindir}/named-journalprint
+%{_bindir}/nsec3hash
+%{_bindir}/pkcs11-destroy
+%{_bindir}/pkcs11-keygen
+%{_bindir}/pkcs11-list
+%{_bindir}/pkcs11-tokens
+%{_libdir}/bind/filter-aaaa.so
 %{_mandir}/man1/arpaname.1.*
 %{_mandir}/man5/named.conf.5*
 %{_mandir}/man5/rndc.conf.5*
-%{_mandir}/man8/ddns-confgen.8.*
-%{_mandir}/man8/dnssec-*.8*
-%{_mandir}/man8/filter-aaaa.8*
-%{_mandir}/man8/named-*.8*
-%{_mandir}/man8/named.8*
-%{_mandir}/man8/nsec3hash.8.*
-%{_mandir}/man8/pkcs11-*.8*
 %{_mandir}/man8/rndc.8*
 %{_mandir}/man8/rndc-confgen.8*
 %{_mandir}/man8/tsig-keygen.8*
@@ -515,10 +478,39 @@ fi
 %config(noreplace) /var/lib/named/var/named/reverse/named.local
 %config(noreplace) /var/lib/named/var/named/reverse/named.zero
 %config(noreplace) /var/lib/named/var/named/named.ca
+%{_mandir}/man1/dnssec-cds.1*
+%{_mandir}/man1/dnssec-dsfromkey.1*
+%{_mandir}/man1/dnssec-importkey.1*
+%{_mandir}/man1/dnssec-keyfromlabel.1*
+%{_mandir}/man1/dnssec-keygen.1*
+%{_mandir}/man1/dnssec-revoke.1*
+%{_mandir}/man1/dnssec-settime.1*
+%{_mandir}/man1/dnssec-signzone.1*
+%{_mandir}/man1/dnssec-verify.1*
+%{_mandir}/man1/dnstap-read.1*
+%{_mandir}/man1/named-checkconf.1*
+%{_mandir}/man1/named-checkzone.1*
+%{_mandir}/man1/named-journalprint.1*
+%{_mandir}/man1/named-nzd2nzf.1*
+%{_mandir}/man1/nsec3hash.1*
+%{_mandir}/man1/pkcs11-destroy.1*
+%{_mandir}/man1/pkcs11-keygen.1*
+%{_mandir}/man1/pkcs11-list.1*
+%{_mandir}/man1/pkcs11-tokens.1*
+%{_mandir}/man8/filter-aaaa.8*
+%{_mandir}/man8/named.8*
+
+%libpackage bind9 1701
+%libpackage dns 1706
+%libpackage irs 1701
+%libpackage isc 1705
+%libpackage isccc 1702
+%libpackage isccfg 1702
+%libpackage ns 1704
 
 %files devel
 %{_includedir}/*
-%{_libdir}/*.a
+%{_libdir}/*.so
 
 %files utils
 %{_bindir}/dig
@@ -540,9 +532,9 @@ fi
 %{_mandir}/man5/resolv.5*
 
 %files doc
-%doc CHANGES README COPYRIGHT
+%doc CHANGES COPYRIGHT
 %if %{sdb_mysql}
 %doc contrib/sdb/mysql/ChangeLog.mysql contrib/sdb/mysql/README.mysql
 %endif
-%doc doc/html doc/misc/
+%doc doc/misc/
 %doc doc/dhcp-dynamic-dns-examples doc/chroot doc/trustix

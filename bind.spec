@@ -65,6 +65,8 @@ BuildRequires:	mysql-devel
 %if %{with gssapi}
 BuildRequires:	pkgconfig(krb5)
 %endif
+BuildRequires:	libtool
+BuildRequires:	libltdl-devel
 BuildRequires:	pkgconfig(libcap)
 BuildRequires:	geoip-devel
 BuildRequires:	mysql-devel
@@ -77,8 +79,11 @@ BuildRequires:	pkgconfig(libcrypto)
 BuildRequires:	pkgconfig(libssl)
 BuildRequires:	pkgconfig(json-c)
 BuildRequires:	pkgconfig(libuv)
-BuildRequires:  pkgconfig(readline)
+BuildRequires:	pkgconfig(readline)
 BuildRequires:	lmdb-devel
+BuildRequires:	doxygen
+BuildRequires:	xsltproc
+BuildRequires:	python3dist(sphinx)
 BuildRequires:	rpm-helper
 
 Requires:	bind-utils >= %{version}-%{release}
@@ -355,7 +360,7 @@ cat named.cache >> named.cache.tmp
 install -m0644 named.cache.tmp %{buildroot}/var/lib/named/var/named/named.ca
 
 # fix man pages
-install -m0644 man5/resolver.5 %{buildroot}%{_mandir}/man5/
+install -D -m 0644 man5/resolver.5 %{buildroot}%{_mandir}/man5/resolver.5
 ln -s resolver.5 %{buildroot}%{_mandir}/man5/resolv.5
 
 # this is just sick...

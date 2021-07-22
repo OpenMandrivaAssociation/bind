@@ -1,6 +1,5 @@
-%define debug_package %{nil}
 %define Werror_cflags -Wformat
-%define _disable_lto 1
+#define _disable_lto 1
 # For plugins
 %global _disable_ld_no_undefined 1
 
@@ -21,7 +20,7 @@ Version:	9.17.6
 Release:	0.%{plevel}.1
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.xz
 %else
-Release:	1
+Release:	2
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.xz
 %endif
 License:	Distributable

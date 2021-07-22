@@ -1,6 +1,5 @@
-%define debug_package %{nil}
 %define Werror_cflags -Wformat
-%define _disable_lto 1
+#define _disable_lto 1
 # For plugins
 %global _disable_ld_no_undefined 1
 
@@ -21,7 +20,7 @@ Version:	9.17.6
 Release:	0.%{plevel}.1
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.xz
 %else
-Release:	1
+Release:	2
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.xz
 %endif
 License:	Distributable
@@ -357,7 +356,7 @@ cat named.cache >> named.cache.tmp
 install -m0644 named.cache.tmp %{buildroot}/var/lib/named/var/named/named.ca
 
 # fix man pages
-install -m0644 man5/resolver.5 %{buildroot}%{_mandir}/man5/
+install -m0644 man5/resolver.5 -D %{buildroot}%{_mandir}/man5/
 ln -s resolver.5 %{buildroot}%{_mandir}/man5/resolv.5
 
 # this is just sick...
@@ -438,12 +437,12 @@ fi
 %{_bindir}/pkcs11-list
 %{_bindir}/pkcs11-tokens
 %{_libdir}/bind/filter-aaaa.so
-%{_mandir}/man1/arpaname.1.*
-%{_mandir}/man5/named.conf.5*
-%{_mandir}/man5/rndc.conf.5*
-%{_mandir}/man8/rndc.8*
-%{_mandir}/man8/rndc-confgen.8*
-%{_mandir}/man8/tsig-keygen.8*
+%doc %{_mandir}/man1/arpaname.1.*
+%doc %{_mandir}/man5/named.conf.5*
+%doc %{_mandir}/man5/rndc.conf.5*
+%doc %{_mandir}/man8/rndc.8*
+%doc %{_mandir}/man8/rndc-confgen.8*
+%doc %{_mandir}/man8/tsig-keygen.8*
 # the chroot
 %dir /var/lib/named
 %dir /var/lib/named/dev
@@ -480,27 +479,27 @@ fi
 %config(noreplace) /var/lib/named/var/named/reverse/named.local
 %config(noreplace) /var/lib/named/var/named/reverse/named.zero
 %config(noreplace) /var/lib/named/var/named/named.ca
-%{_mandir}/man1/dnssec-cds.1*
-%{_mandir}/man1/dnssec-dsfromkey.1*
-%{_mandir}/man1/dnssec-importkey.1*
-%{_mandir}/man1/dnssec-keyfromlabel.1*
-%{_mandir}/man1/dnssec-keygen.1*
-%{_mandir}/man1/dnssec-revoke.1*
-%{_mandir}/man1/dnssec-settime.1*
-%{_mandir}/man1/dnssec-signzone.1*
-%{_mandir}/man1/dnssec-verify.1*
-%{_mandir}/man1/dnstap-read.1*
-%{_mandir}/man1/named-checkconf.1*
-%{_mandir}/man1/named-checkzone.1*
-%{_mandir}/man1/named-journalprint.1*
-%{_mandir}/man1/named-nzd2nzf.1*
-%{_mandir}/man1/nsec3hash.1*
-%{_mandir}/man1/pkcs11-destroy.1*
-%{_mandir}/man1/pkcs11-keygen.1*
-%{_mandir}/man1/pkcs11-list.1*
-%{_mandir}/man1/pkcs11-tokens.1*
-%{_mandir}/man8/filter-aaaa.8*
-%{_mandir}/man8/named.8*
+%doc %{_mandir}/man1/dnssec-cds.1*
+%doc %{_mandir}/man1/dnssec-dsfromkey.1*
+%doc %{_mandir}/man1/dnssec-importkey.1*
+%doc %{_mandir}/man1/dnssec-keyfromlabel.1*
+%doc %{_mandir}/man1/dnssec-keygen.1*
+%doc %{_mandir}/man1/dnssec-revoke.1*
+%doc %{_mandir}/man1/dnssec-settime.1*
+%doc %{_mandir}/man1/dnssec-signzone.1*
+%doc %{_mandir}/man1/dnssec-verify.1*
+%doc %{_mandir}/man1/dnstap-read.1*
+%doc %{_mandir}/man1/named-checkconf.1*
+%doc %{_mandir}/man1/named-checkzone.1*
+%doc %{_mandir}/man1/named-journalprint.1*
+%doc %{_mandir}/man1/named-nzd2nzf.1*
+%doc %{_mandir}/man1/nsec3hash.1*
+%doc %{_mandir}/man1/pkcs11-destroy.1*
+%doc %{_mandir}/man1/pkcs11-keygen.1*
+%doc %{_mandir}/man1/pkcs11-list.1*
+%doc %{_mandir}/man1/pkcs11-tokens.1*
+%doc %{_mandir}/man8/filter-aaaa.8*
+%doc %{_mandir}/man8/named.8*
 
 %libpackage bind9 1701
 %libpackage dns 1706
@@ -523,15 +522,15 @@ fi
 %{_bindir}/delv
 %{_bindir}/mdig
 %{_bindir}/named-rrchecker
-%{_mandir}/man1/delv.1*
-%{_mandir}/man1/mdig.1*
-%{_mandir}/man1/named-rrchecker.1*
-%{_mandir}/man1/host.1*
-%{_mandir}/man1/dig.1*
-%{_mandir}/man1/nslookup.1*
-%{_mandir}/man1/nsupdate.1*
-%{_mandir}/man5/resolver.5*
-%{_mandir}/man5/resolv.5*
+%doc %{_mandir}/man1/delv.1*
+%doc %{_mandir}/man1/mdig.1*
+%doc %{_mandir}/man1/named-rrchecker.1*
+%doc %{_mandir}/man1/host.1*
+%doc %{_mandir}/man1/dig.1*
+%doc %{_mandir}/man1/nslookup.1*
+%doc %{_mandir}/man1/nsupdate.1*
+%doc %{_mandir}/man5/resolver.5*
+%doc %{_mandir}/man5/resolv.5*
 
 %files doc
 %doc CHANGES COPYRIGHT

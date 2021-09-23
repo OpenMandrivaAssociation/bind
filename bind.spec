@@ -356,7 +356,7 @@ cat named.cache >> named.cache.tmp
 install -m0644 named.cache.tmp %{buildroot}/var/lib/named/var/named/named.ca
 
 # fix man pages
-install -m0644 man5/resolver.5 -D %{buildroot}%{_mandir}/man5/
+install -D -m 0644 man5/resolver.5 %{buildroot}%{_mandir}/man5/resolver.5
 ln -s resolver.5 %{buildroot}%{_mandir}/man5/resolv.5
 
 # this is just sick...

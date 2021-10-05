@@ -26,6 +26,7 @@ Source0:	http://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.xz
 License:	Distributable
 Group:		System/Servers
 Url:		http://www.isc.org/products/BIND/
+Source1:	bind.sysusers
 Source2:	bind-manpages.tar.bz2
 Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2
 Source4:	bind-named.init
@@ -57,7 +58,7 @@ Patch205:	bind-9.3.2-prctl_set_dumpable.patch
 Patch209:	bind-9.9-dlz-64bit.patch
 Patch210:	bind-9.17.6-system-ltdl.patch
 
-BuildRequires:  file
+BuildRequires:	file
 %if %{sdb_mysql}
 BuildRequires:	mysql-devel
 %endif
@@ -78,14 +79,16 @@ BuildRequires:	pkgconfig(libcrypto)
 BuildRequires:	pkgconfig(libssl)
 BuildRequires:	pkgconfig(json-c)
 BuildRequires:	pkgconfig(libuv)
-BuildRequires:  pkgconfig(readline)
+BuildRequires:	pkgconfig(readline)
 BuildRequires:	lmdb-devel
-BuildRequires:	rpm-helper
-
+BuildRequires:	doxygen
+BuildRequires:	xsltproc
+BuildRequires:	python3dist(sphinx)
+%systemd_requires
+Requires(pre):	systemd
 Requires:	bind-utils >= %{version}-%{release}
 # takes care of MDV Bug #: 62829
 Requires:	openssl-engines
-Requires(pre,postun):	rpm-helper
 
 %description
 BIND (Berkeley Internet Name Domain) is an implementation of the DNS
@@ -118,11 +121,12 @@ Faster lookups, particularly in large zones.
 
 Build Options:
 --with sdb_mysql      Build with MySQL database support
-%package	utils
+
+%package utils
 Summary:	Utilities for querying DNS name servers
 Group:		Networking/Other
 
-%description	utils
+%description utils
 Bind-utils contains a collection of utilities for querying DNS (Domain
 Name Service) name servers to find out information about Internet hosts.
 These tools will provide you with the IP addresses for given host names,
@@ -132,20 +136,20 @@ addresses.
 You should install bind-utils if you need to get information from DNS name
 servers.
 
-%package	devel
+%package devel
 Summary:	Include files and libraries needed for bind DNS development
 Group:		Development/C
 
-%description	devel
+%description devel
 The bind-devel package contains all the include files and the
 library required for DNS (Domain Name Service) development for
 BIND versions 9.x.x.
 
-%package	doc
+%package doc
 Summary:	Documentation for BIND
 Group:		Books/Other
 
-%description	doc
+%description doc
 The bind-devel package contains the documentation for BIND.
 
 %prep
@@ -160,8 +164,8 @@ The bind-devel package contains the documentation for BIND.
 
 %if %{sdb_mysql}
 mv mysql-bind-0.1 contrib/sdb/mysql
-%__cp contrib/sdb/mysql/mysqldb.c bin/named
-%__cp contrib/sdb/mysql/mysqldb.h bin/named/include
+cp contrib/sdb/mysql/mysqldb.c bin/named
+cp contrib/sdb/mysql/mysqldb.h bin/named/include
 %patch102 -p1 -b .sdb_mysql.droplet
 %endif
 
@@ -199,7 +203,6 @@ cp %{SOURCE113} caching-nameserver/named.iscdlv.key
 find . -type f|xargs file|grep 'CRLF'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
 find . -type f|xargs file|grep 'text'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
 
-
 %build
 %serverbuild
 # it does not work with -fPIE and someone added that to the serverbuild macro...
@@ -220,14 +223,10 @@ export CFLAGS="$CFLAGS -DLDAP_DEPRECATED"
 # threading is evil for the host command
 %configure \
 	--localstatedir=/var \
-	--disable-openssl-version-check \
-	--disable-threads \
 	--enable-largefile \
-	--enable-ipv6 \
 	--with-openssl=%{_prefix} \
-	--with-libidn2 \
-	--with-randomdev=/dev/urandom \
-	--with-geoip
+	--with-libidn2
+
 # FIXME configure should be fixed instead of having to work around
 # its brokenness...
 echo '#define HAVE_JSON_C 1' >>config.h
@@ -239,21 +238,18 @@ make clean
 
 %configure \
 	--localstatedir=/var \
-	--disable-openssl-version-check \
-	--enable-threads \
 	--enable-largefile \
-	--enable-ipv6 \
 	--enable-filter-aaaa \
 	--enable-epoll \
 	--enable-native-pkcs11 \
 	--with-openssl=%{_prefix} \
 	--with-libidn2 \
 %if %{with gssapi}
-	--with-gssapi=%{_prefix} --disable-isc-spnego \
+	--with-gssapi=%{_prefix} \
+	--disable-isc-spnego \
 %else
 	--without-gssapi \
 %endif
-	--with-randomdev=/dev/urandom \
 	--with-libxml2=yes \
 	--with-dlz-postgres=yes \
 	--with-dlz-mysql=yes \
@@ -261,8 +257,8 @@ make clean
 	--with-dlz-filesystem=yes \
 	--with-dlz-ldap=yes \
 	--with-dlz-odbc=no \
-	--with-dlz-stub=yes \
-	--with-geoip
+	--with-dlz-stub=yes
+
 # FIXME configure should be fixed instead of having to work around
 # its brokenness...
 echo '#define HAVE_JSON_C 1' >>config.h
@@ -363,41 +359,10 @@ ln -s resolver.5 %{buildroot}%{_mandir}/man5/resolv.5
 touch %{buildroot}/var/lib/named/var/named/dynamic/managed-keys.bind
 rm -rf %{buildroot}$RPM_BUILD_DIR
 
+install -Dpm 644 %{SOURCE1} %{buildroot}%{_sysusersdir}/%{name}.conf
+
 %pre
-%_pre_useradd named /var/lib/named /bin/false
-
-# adjust home dir location if needed 
-if [ "$(getent passwd named | awk -F: '{print $6}')" == "/var/named" ]; then
-    usermod -d /var/lib/named named
-fi
-
-# check if bind is chrooted and try to restore it
-if [ -x %{_sbindir}/bind-chroot.sh ]; then
-    ROOTDIR="/var/lib/named-chroot"
-    [ -f /etc/sysconfig/named ] && . /etc/sysconfig/named
-    if [ -d $ROOTDIR -a ! -d /var/lib/named ]; then
-	echo "old chroot found at $ROOTDIR, copying to /var/lib/named"
-        cp -rp $ROOTDIR /var/lib/named
-	chown -R named:named /var/lib/named
-    fi
-    if grep -q "$ROOTDIR" /etc/sysconfig/syslog; then
-	if [ -f /var/lock/subsys/named ]; then
-	    service named stop > /dev/null 2>/dev/null || :
-	fi
-	%{_sbindir}/bind-chroot.sh --unchroot > /dev/null 2>/dev/null || :
-    fi
-    if [ -f /var/lock/subsys/syslog ]; then
-	service syslog restart  > /dev/null 2>/dev/null || :
-    fi
-fi
-
-DATE=$(date +%%Y%%m%%d%%j%%S)
-for f in named.conf rndc.conf rndc.key; do
-    # move away files to prepare for softlinks
-    if [ -f /etc/$f -a ! -h /etc/$f ]; then mv -vf /etc/$f /etc/$f.$DATE; fi
-    if [ -f /etc/$f -a ! -h /etc/$f ]; then mv -vf /etc/$f /etc/$f.$DATE; fi
-    if [ -f /etc/$f -a ! -h /etc/$f ]; then mv -vf /etc/$f /etc/$f.$DATE; fi
-done
+%sysusers_create_package %{name} %{SOURCE1}
 
 %post
 if grep -q "_MY_KEY_" /var/lib/named/etc/rndc.conf /var/lib/named/etc/rndc.key; then
@@ -405,11 +370,9 @@ if grep -q "_MY_KEY_" /var/lib/named/etc/rndc.conf /var/lib/named/etc/rndc.key; 
     perl -pi -e "s|_MY_KEY_|$MYKEY|g" /var/lib/named/etc/rndc.conf /var/lib/named/etc/rndc.key
 fi
 
-%postun
-%_postun_userdel named
-
 %files
 %config(noreplace) %{_sysconfdir}/sysconfig/named
+%{_sysusersdir}/%{name}.conf
 %{_initrddir}/named
 %{_sbindir}/ddns-confgen
 %{_sbindir}/dns-keygen
@@ -431,6 +394,7 @@ fi
 %{_bindir}/named-checkzone
 %{_bindir}/named-compilezone
 %{_bindir}/named-journalprint
+%optional %{_bindir}/named-nzd2nzf
 %{_bindir}/nsec3hash
 %{_bindir}/pkcs11-destroy
 %{_bindir}/pkcs11-keygen

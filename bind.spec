@@ -78,6 +78,7 @@ BuildRequires:	pkgconfig(libssl)
 BuildRequires:	pkgconfig(json-c)
 BuildRequires:	pkgconfig(libuv)
 BuildRequires:	pkgconfig(readline)
+BuildRequires:	pkgconfig(libnghttp2)
 BuildRequires:	lmdb-devel
 BuildRequires:	doxygen
 BuildRequires:	xsltproc

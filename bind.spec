@@ -15,17 +15,17 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Epoch:		1
-Version:	9.17.6
+Version:	9.17.20
 %if "%plevel" != ""
 Release:	0.%{plevel}.1
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.xz
 %else
-Release:	2
+Release:	1
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.xz
 %endif
 License:	Distributable
 Group:		System/Servers
-Url:		http://www.isc.org/products/BIND/
+Url:		http://www.isc.org/bind/
 Source1:	bind.sysusers
 Source2:	bind-manpages.tar.bz2
 Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2
@@ -55,8 +55,6 @@ Patch0:		bind-fallback-to-second-server.diff
 Patch3:		bind-9.12.2-json-c.patch
 Patch102:	bind-9.3.0rc2-sdb_mysql.patch
 Patch205:	bind-9.3.2-prctl_set_dumpable.patch
-Patch209:	bind-9.9-dlz-64bit.patch
-Patch210:	bind-9.17.6-system-ltdl.patch
 
 BuildRequires:	file
 %if %{sdb_mysql}
@@ -136,9 +134,18 @@ addresses.
 You should install bind-utils if you need to get information from DNS name
 servers.
 
+# No point in separate libpackages because those are essentially internal use libraries
+%package libs
+Summary:	Libraries provided and used by bind
+Group:		System/Libraries
+
+%description libs
+Libraries provided and used by bind
+
 %package devel
 Summary:	Include files and libraries needed for bind DNS development
 Group:		Development/C
+Requires:	%{name}-libs = %{EVRD}
 
 %description devel
 The bind-devel package contains all the include files and the
@@ -170,8 +177,6 @@ cp contrib/sdb/mysql/mysqldb.h bin/named/include
 %endif
 
 %patch205 -p1 -b .prctl_set_dumpable.droplet
-%patch209 -p1 -b .64bit
-%patch210 -p1 -b .systemltdl~
 
 cp %{SOURCE4} named.init
 # fix https://qa.mandriva.com/show_bug.cgi?id=62829
@@ -214,8 +219,6 @@ export CXX=%{__cxx}
 export CPPFLAGS="$CPPFLAGS -DDIG_SIGCHASE"
 export STD_CDEFINES="$CPPFLAGS"
 
-export WANT_AUTOCONF_2_5=1
-rm m4/ltdl.m4
 libtoolize --force; aclocal -I m4 --force; autoheader --force; automake -a; autoconf --force
 
 export CFLAGS="$CFLAGS -DLDAP_DEPRECATED"
@@ -396,10 +399,8 @@ fi
 %{_bindir}/named-journalprint
 %optional %{_bindir}/named-nzd2nzf
 %{_bindir}/nsec3hash
-%{_bindir}/pkcs11-destroy
-%{_bindir}/pkcs11-keygen
-%{_bindir}/pkcs11-list
-%{_bindir}/pkcs11-tokens
+%dir %{_libdir}/bind
+%{_libdir}/bind/filter-a.so
 %{_libdir}/bind/filter-aaaa.so
 %doc %{_mandir}/man1/arpaname.1.*
 %doc %{_mandir}/man5/named.conf.5*
@@ -452,30 +453,23 @@ fi
 %doc %{_mandir}/man1/dnssec-settime.1*
 %doc %{_mandir}/man1/dnssec-signzone.1*
 %doc %{_mandir}/man1/dnssec-verify.1*
-%doc %{_mandir}/man1/dnstap-read.1*
 %doc %{_mandir}/man1/named-checkconf.1*
 %doc %{_mandir}/man1/named-checkzone.1*
+%doc %{_mandir}/man1/named-compilezone.1*
 %doc %{_mandir}/man1/named-journalprint.1*
 %doc %{_mandir}/man1/named-nzd2nzf.1*
 %doc %{_mandir}/man1/nsec3hash.1*
-%doc %{_mandir}/man1/pkcs11-destroy.1*
-%doc %{_mandir}/man1/pkcs11-keygen.1*
-%doc %{_mandir}/man1/pkcs11-list.1*
-%doc %{_mandir}/man1/pkcs11-tokens.1*
 %doc %{_mandir}/man8/filter-aaaa.8*
 %doc %{_mandir}/man8/named.8*
+%doc %{_mandir}/man8/ddns-confgen.8*
+%doc %{_mandir}/man8/filter-a.8*
 
-%libpackage bind9 1701
-%libpackage dns 1706
-%libpackage irs 1701
-%libpackage isc 1705
-%libpackage isccc 1702
-%libpackage isccfg 1702
-%libpackage ns 1704
+%files libs
+%{_libdir}/lib*-%{version}.so
 
 %files devel
 %{_includedir}/*
-%{_libdir}/*.so
+%{_libdir}/lib{bind9,dns,irs,isccc,isccfg,isc,ns}.so
 
 %files utils
 %{_bindir}/dig

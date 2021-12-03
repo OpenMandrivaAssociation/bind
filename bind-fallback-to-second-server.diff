@@ -1,19 +1,19 @@
-diff -up bind-9.17.6/bin/dig/dighost.c.fallback-to-second-server.droplet bind-9.17.6/bin/dig/dighost.c
---- bind-9.17.6/bin/dig/dighost.c.fallback-to-second-server.droplet	2020-10-12 13:10:30.609939011 +0200
-+++ bind-9.17.6/bin/dig/dighost.c	2020-10-25 02:03:28.727114752 +0100
-@@ -637,7 +637,7 @@ make_empty_lookup(void) {
- 	looknew->identify = false;
- 	looknew->identify_previous_line = false;
- 	looknew->ignore = false;
--	looknew->servfail_stops = true;
-+	looknew->servfail_stops = false;
- 	looknew->besteffort = true;
- 	looknew->dnssec = false;
- 	looknew->ednsflags = 0;
-diff -up bind-9.17.6/bin/dig/host.c.fallback-to-second-server.droplet bind-9.17.6/bin/dig/host.c
---- bind-9.17.6/bin/dig/host.c.fallback-to-second-server.droplet	2020-10-12 13:10:30.609939011 +0200
-+++ bind-9.17.6/bin/dig/host.c	2020-10-25 02:04:37.239908538 +0100
-@@ -117,6 +117,7 @@ show_usage(void) {
+diff -up bind-9.17.20/bin/dig/dighost.c.fallback-to-second-server.droplet bind-9.17.20/bin/dig/dighost.c
+--- bind-9.17.20/bin/dig/dighost.c.fallback-to-second-server.droplet	2021-12-03 19:40:55.063305748 +0100
++++ bind-9.17.20/bin/dig/dighost.c	2021-12-03 19:41:30.215402219 +0100
+@@ -610,7 +610,7 @@ make_empty_lookup(void) {
+ 		.rdtype = dns_rdatatype_a,
+ 		.qrdtype = dns_rdatatype_a,
+ 		.rdclass = dns_rdataclass_in,
+-		.servfail_stops = true,
++		.servfail_stops = false,
+ 		.besteffort = true,
+ 		.opcode = dns_opcode_query,
+ 		.badcookie = true,
+diff -up bind-9.17.20/bin/dig/host.c.fallback-to-second-server.droplet bind-9.17.20/bin/dig/host.c
+--- bind-9.17.20/bin/dig/host.c.fallback-to-second-server.droplet	2021-11-05 08:13:41.058614455 +0100
++++ bind-9.17.20/bin/dig/host.c	2021-12-03 19:40:55.063305748 +0100
+@@ -114,6 +114,7 @@ show_usage(void) {
  		"       -c specifies query class for non-IN data\n"
  		"       -C compares SOA records on authoritative nameservers\n"
  		"       -d is equivalent to -v\n"
@@ -21,7 +21,7 @@ diff -up bind-9.17.6/bin/dig/host.c.fallback-to-second-server.droplet bind-9.17.
  		"       -l lists all hosts in a domain, using AXFR\n"
  		"       -m set memory debugging flag (trace|record|usage)\n"
  		"       -N changes the number of dots allowed before root "
-@@ -637,6 +638,8 @@ pre_parse_args(int argc, char **argv) {
+@@ -638,6 +639,8 @@ pre_parse_args(int argc, char **argv) {
  			break;
  		case 'i':
  			break;
@@ -30,7 +30,7 @@ diff -up bind-9.17.6/bin/dig/host.c.fallback-to-second-server.droplet bind-9.17.
  		case 'l':
  			break;
  		case 'n':
-@@ -698,6 +701,9 @@ parse_args(bool is_batchfile, int argc,
+@@ -699,6 +702,9 @@ parse_args(bool is_batchfile, int argc,
  
  	while ((c = isc_commandline_parse(argc, argv, optstring)) != -1) {
  		switch (c) {
@@ -40,9 +40,9 @@ diff -up bind-9.17.6/bin/dig/host.c.fallback-to-second-server.droplet bind-9.17.
  		case 'l':
  			lookup->tcp_mode = true;
  			lookup->rdtype = dns_rdatatype_axfr;
-diff -up bind-9.17.6/bin/dig/nslookup.c.fallback-to-second-server.droplet bind-9.17.6/bin/dig/nslookup.c
---- bind-9.17.6/bin/dig/nslookup.c.fallback-to-second-server.droplet	2020-10-25 02:03:28.728114763 +0100
-+++ bind-9.17.6/bin/dig/nslookup.c	2020-10-25 02:05:47.660722086 +0100
+diff -up bind-9.17.20/bin/dig/nslookup.c.fallback-to-second-server.droplet bind-9.17.20/bin/dig/nslookup.c
+--- bind-9.17.20/bin/dig/nslookup.c.fallback-to-second-server.droplet	2021-11-05 08:13:41.058614455 +0100
++++ bind-9.17.20/bin/dig/nslookup.c	2021-12-03 19:40:55.063305748 +0100
 @@ -43,7 +43,7 @@ static bool short_form = true, tcpmode =
  	    identify = false, stats = true, comments = true,
  	    section_question = true, section_answer = true,
@@ -52,7 +52,7 @@ diff -up bind-9.17.6/bin/dig/nslookup.c.fallback-to-second-server.droplet bind-9
  	    a_noanswer = false;
  
  static bool interactive;
-@@ -715,9 +715,10 @@ setoption(char *opt) {
+@@ -714,9 +714,10 @@ setoption(char *opt) {
  		usesearch = false;
  	} else if (CHECKOPT("sil", 3)) {
  		/* deprecation_msg = false; */

@@ -458,7 +458,7 @@ fi
 %doc %{_mandir}/man1/named-checkzone.1*
 %doc %{_mandir}/man1/named-compilezone.1*
 %doc %{_mandir}/man1/named-journalprint.1*
-%doc %{_mandir}/man1/named-nzd2nzf.1*
+%optional %doc %{_mandir}/man1/named-nzd2nzf.1*
 %doc %{_mandir}/man1/nsec3hash.1*
 %doc %{_mandir}/man8/filter-aaaa.8*
 %doc %{_mandir}/man8/named.8*

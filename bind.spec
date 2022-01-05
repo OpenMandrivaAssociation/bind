@@ -20,7 +20,7 @@ Version:	9.17.20
 Release:	0.%{plevel}.1
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.xz
 %else
-Release:	1
+Release:	2
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.xz
 %endif
 License:	Distributable
@@ -243,9 +243,7 @@ make clean
 %configure \
 	--localstatedir=/var \
 	--enable-largefile \
-	--enable-filter-aaaa \
 	--enable-epoll \
-	--enable-native-pkcs11 \
 	--with-openssl=%{_prefix} \
 	--with-libidn2 \
 %if %{with gssapi}
@@ -254,14 +252,7 @@ make clean
 %else
 	--without-gssapi \
 %endif
-	--with-libxml2=yes \
-	--with-dlz-postgres=yes \
-	--with-dlz-mysql=yes \
-	--with-dlz-bdb=no \
-	--with-dlz-filesystem=yes \
-	--with-dlz-ldap=yes \
-	--with-dlz-odbc=no \
-	--with-dlz-stub=yes
+	--with-libxml2=yes
 
 # FIXME configure should be fixed instead of having to work around
 # its brokenness...

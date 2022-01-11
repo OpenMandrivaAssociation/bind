@@ -238,7 +238,7 @@ echo '#define HAVE_JSON_C 1' >>config.h
 
 make -C lib
 make -C bin/dig
-make -C bin/dig DESTDIR="$(pwd)" install 
+make -C bin/dig DESTDIR="$(pwd)" install
 make clean
 
 %configure \
@@ -249,7 +249,6 @@ make clean
 	--enable-ipv6 \
 	--enable-filter-aaaa \
 	--enable-epoll \
-	--enable-native-pkcs11 \
 	--with-openssl=%{_prefix} \
 	--with-libidn2 \
 %if %{with gssapi}
@@ -435,11 +434,8 @@ fi
 %{_bindir}/named-checkzone
 %{_bindir}/named-compilezone
 %{_bindir}/named-journalprint
+%optional %{_bindir}/named-nzd2nzf
 %{_bindir}/nsec3hash
-%{_bindir}/pkcs11-destroy
-%{_bindir}/pkcs11-keygen
-%{_bindir}/pkcs11-list
-%{_bindir}/pkcs11-tokens
 %{_libdir}/bind/filter-aaaa.so
 %{_mandir}/man1/arpaname.1.*
 %{_mandir}/man5/named.conf.5*
@@ -498,10 +494,6 @@ fi
 %{_mandir}/man1/named-journalprint.1*
 %{_mandir}/man1/named-nzd2nzf.1*
 %{_mandir}/man1/nsec3hash.1*
-%{_mandir}/man1/pkcs11-destroy.1*
-%{_mandir}/man1/pkcs11-keygen.1*
-%{_mandir}/man1/pkcs11-list.1*
-%{_mandir}/man1/pkcs11-tokens.1*
 %{_mandir}/man8/filter-aaaa.8*
 %{_mandir}/man8/named.8*
 

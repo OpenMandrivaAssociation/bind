@@ -17,7 +17,7 @@ Name:		bind
 Epoch:		1
 Version:	9.18.0
 %if "%plevel" != ""
-Release:	1
+Release:	2
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.xz
 %else
 Release:	1

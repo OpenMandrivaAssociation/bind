@@ -15,12 +15,12 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Epoch:		1
-Version:	9.18.12
+Version:	9.18.15
 %if "%plevel" != ""
-Release:	2
+Release:	1
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.xz
 %else
-Release:	2
+Release:	1
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.xz
 %endif
 License:	Distributable

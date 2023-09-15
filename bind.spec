@@ -15,7 +15,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Epoch:		1
-Version:	9.18.17
+Version:	9.18.18
 %if "%plevel" != ""
 Release:	1
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.xz
@@ -68,7 +68,7 @@ BuildRequires:	libltdl-devel
 BuildRequires:	pkgconfig(libcap)
 BuildRequires:	geoip-devel
 BuildRequires:	mysql-devel
-BuildRequires:	openldap-devel
+BuildRequires:	pkgconfig(ldap)
 BuildRequires:	postgresql-devel
 BuildRequires:	pkgconfig(libidn2)
 BuildRequires:	pkgconfig(libxml-2.0)

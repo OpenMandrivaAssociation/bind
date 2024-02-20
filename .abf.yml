@@ -2,4 +2,4 @@ sources:
   bind-dhcp-dynamic-dns-examples.tar.bz2: d33980aad3e0380fc89f8346ab37786d39157696
   bind-manpages.tar.bz2: 4b08b3d62490f536ae52c34cfab1343d01b326c6
   mysql-bind-0.1.tar.bz2: 187b8a05a98a2f47112a21b38fb8caa668f1e8f6
-  bind-9.18.21.tar.xz: e202ef1583ef39f1af0d3a9cb1e6f6adbc4a2314
+  bind-9.18.24.tar.xz: e5bfeb64e3d118c5b4e21ae615f2b9c3ea5339ff

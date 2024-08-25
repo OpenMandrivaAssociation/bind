@@ -79,6 +79,8 @@ BuildRequires:	pkgconfig(json-c)
 BuildRequires:	pkgconfig(libuv)
 BuildRequires:	pkgconfig(readline)
 BuildRequires:	pkgconfig(libnghttp2)
+BuildRequires:	pkgconfig(liburcu)
+BuildRequires:	pkgconfig(liburcu-cds)
 BuildRequires:	lmdb-devel
 BuildRequires:	doxygen
 BuildRequires:	xsltproc

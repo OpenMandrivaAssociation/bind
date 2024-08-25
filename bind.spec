@@ -15,7 +15,7 @@
 Summary:	A DNS (Domain Name System) server
 Name:		bind
 Epoch:		1
-Version:	9.18.25
+Version:	9.21.0
 %if "%plevel" != ""
 Release:	1
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.xz
@@ -167,17 +167,17 @@ The bind-devel package contains the documentation for BIND.
 %setup -q  -n %{name}-%{version} -a2 -a3 -a12
 %endif
 
-%patch0 -p1 -b .fallback-to-second-server.droplet
+%patch 0 -p1 -b .fallback-to-second-server.droplet
 #patch2 -p1 -b .link
 
 %if %{sdb_mysql}
 mv mysql-bind-0.1 contrib/sdb/mysql
 cp contrib/sdb/mysql/mysqldb.c bin/named
 cp contrib/sdb/mysql/mysqldb.h bin/named/include
-%patch102 -p1 -b .sdb_mysql.droplet
+%patch 102 -p1 -b .sdb_mysql.droplet
 %endif
 
-%patch205 -p1 -b .prctl_set_dumpable.droplet
+%patch 205 -p1 -b .prctl_set_dumpable.droplet
 
 cp %{SOURCE4} named.init
 # fix https://qa.mandriva.com/show_bug.cgi?id=62829
@@ -339,7 +339,7 @@ ln -s /var/lib/named/etc/named.conf %{buildroot}%{_sysconfdir}/named.conf
 ln -s /var/lib/named/etc/rndc.conf %{buildroot}%{_sysconfdir}/rndc.conf
 ln -s /var/lib/named/etc/rndc.key %{buildroot}%{_sysconfdir}/rndc.key
 ln -s /var/lib/named/etc/named.iscdlv.key %{buildroot}%{_sysconfdir}/named.iscdlv.key
-mv %{buildroot}%{_sysconfdir}/bind.keys %{buildroot}/var/lib/named/etc/
+cp bind.keys %{buildroot}/var/lib/named/etc/
 ln -s /var/lib/named/etc/bind.keys %{buildroot}%{_sysconfdir}/bind.keys
 
 echo "; Use \"dig @A.ROOT-SERVERS.NET . ns\" to update this file if it's outdated." > named.cache.tmp
@@ -381,6 +381,7 @@ fi
 %{_bindir}/dnssec-importkey
 %{_bindir}/dnssec-keyfromlabel
 %{_bindir}/dnssec-keygen
+%{_bindir}/dnssec-ksr
 %{_bindir}/dnssec-revoke
 %{_bindir}/dnssec-settime
 %{_bindir}/dnssec-signzone
@@ -394,7 +395,8 @@ fi
 %dir %{_libdir}/bind
 %{_libdir}/bind/filter-a.so
 %{_libdir}/bind/filter-aaaa.so
-%doc %{_mandir}/man1/arpaname.1.*
+%doc %{_mandir}/man1/arpaname.1*
+%doc %{_mandir}/man1/dnssec-ksr.1*
 %doc %{_mandir}/man5/named.conf.5*
 %doc %{_mandir}/man5/rndc.conf.5*
 %doc %{_mandir}/man8/rndc.8*

@@ -25,7 +25,7 @@ Source0:	http://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.xz
 %endif
 License:	Distributable
 Group:		System/Servers
-Url:		http://www.isc.org/bind/
+Url:		https://www.isc.org/bind/
 Source1:	bind.sysusers
 Source2:	bind-manpages.tar.bz2
 Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2

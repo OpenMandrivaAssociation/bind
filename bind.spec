@@ -14,15 +14,13 @@
 
 Summary:	A DNS (Domain Name System) server
 Name:		bind
-Epoch:		1
-Version:	9.21.0
+Version:	9.21.4
 %if "%plevel" != ""
-Release:	1
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.xz
 %else
-Release:	1
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.xz
 %endif
+Release:	1
 License:	Distributable
 Group:		System/Servers
 Url:		https://www.isc.org/bind/
@@ -51,6 +49,8 @@ Source111:	rndc.key
 Source112:	trusted_networks_acl.conf
 Source113:	named.iscdlv.key
 Patch0:		bind-fallback-to-second-server.diff
+Patch1:		https://downloads.isc.org/isc/bind9/9.21.4/patches/0001-CVE-2024-11187.patch
+Patch2:		https://downloads.isc.org/isc/bind9/9.21.4/patches/0002-CVE-2024-12705.patch
 #Patch2:		bind-9.7.3-link.patch
 Patch3:		bind-9.12.2-json-c.patch
 Patch102:	bind-9.3.0rc2-sdb_mysql.patch
@@ -487,7 +487,7 @@ fi
 %doc %{_mandir}/man5/resolv.5*
 
 %files doc
-%doc CHANGES COPYRIGHT
+%doc COPYRIGHT
 %if %{sdb_mysql}
 %doc contrib/sdb/mysql/ChangeLog.mysql contrib/sdb/mysql/README.mysql
 %endif

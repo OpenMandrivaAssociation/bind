@@ -14,7 +14,7 @@
 
 Summary:	A DNS (Domain Name System) server
 Name:		bind
-Version:	9.21.4
+Version:	9.21.6
 %if "%plevel" != ""
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.xz
 %else

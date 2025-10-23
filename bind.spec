@@ -63,6 +63,7 @@ BuildRequires:	lmdb-devel
 BuildRequires:	doxygen
 BuildRequires:	xsltproc
 BuildRequires:	python3dist(sphinx)
+BuildRequires:	protobuf-compiler protobuf-c
 %systemd_requires
 Requires(pre):	systemd
 Requires:	bind-utils >= %{version}-%{release}

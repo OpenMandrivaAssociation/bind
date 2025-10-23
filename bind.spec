@@ -78,6 +78,7 @@ BuildOption:	-Ddoh=enabled
 BuildOption:	-Dgeoip=enabled
 BuildOption:	-Dgssapi=enabled
 BuildOption:	-Didn=enabled
+BuildOption:	-Djemalloc=disabled
 BuildOption:	-Dline=enabled
 BuildOption:	-Dlmdb=enabled
 BuildOption:	-Dstats-json=enabled

@@ -59,6 +59,7 @@ BuildRequires:	pkgconfig(liburcu)
 BuildRequires:	pkgconfig(liburcu-cds)
 BuildRequires:	pkgconfig(libfstrm)
 BuildRequires:	pkgconfig(krb5-gssapi)
+BuildRequires:	pkgconfig(libprotobuf-c)
 BuildRequires:	lmdb-devel
 BuildRequires:	doxygen
 BuildRequires:	xsltproc

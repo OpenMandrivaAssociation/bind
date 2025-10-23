@@ -58,6 +58,7 @@ BuildRequires:	pkgconfig(libnghttp2)
 BuildRequires:	pkgconfig(liburcu)
 BuildRequires:	pkgconfig(liburcu-cds)
 BuildRequires:	pkgconfig(libfstrm)
+BuildRequires:	pkgconfig(krb5-gssapi)
 BuildRequires:	lmdb-devel
 BuildRequires:	doxygen
 BuildRequires:	xsltproc

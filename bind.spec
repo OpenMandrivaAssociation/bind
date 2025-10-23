@@ -3,36 +3,23 @@
 # For plugins
 %global _disable_ld_no_undefined 1
 
-%define plevel %{nil}
-
 # default options
-%define sdb_mysql 0
 %bcond_with gssapi
-
-%{?_with_sdb_mysql: %{expand: %%global sdb_mysql 1}}
-%{?_without_sdb_mysql: %{expand: %%global sdb_mysql 0}}
 
 Summary:	A DNS (Domain Name System) server
 Name:		bind
-Version:	9.21.6
-%if "%plevel" != ""
-Source0:	http://ftp.isc.org/isc/%{name}9/%{version}-%plevel/%{name}-%{version}-%{plevel}.tar.xz
-%else
-Source0:	http://ftp.isc.org/isc/%{name}9/%{version}/%{name}-%{version}.tar.xz
-%endif
+Version:	9.21.14
+Source0:	http://ftp.isc.org/isc/%{name}9/%{version}%{?plevel:-%plevel}/%{name}-%{version}%{?plevel:-%{plevel}}.tar.xz
 Release:	1
-License:	Distributable
+License:	MPL-2.0
 Group:		System/Servers
 Url:		https://www.isc.org/bind/
 Source1:	bind.sysusers
 Source2:	bind-manpages.tar.bz2
 Source3:	bind-dhcp-dynamic-dns-examples.tar.bz2
-Source4:	bind-named.init
 Source6:	bind-named.sysconfig
 Source7:	bind-keygen.c
 Source11:	ftp://ftp.internic.net/domain/named.cache
-# (oe) http://mysql-bind.sourceforge.net/
-Source12:	mysql-bind-0.1.tar.bz2
 # caching-nameserver files (S100-S112)
 Source100:	bogon_acl.conf
 Source101:	hosts
@@ -48,18 +35,8 @@ Source110:	rndc.conf
 Source111:	rndc.key
 Source112:	trusted_networks_acl.conf
 Source113:	named.iscdlv.key
-Patch0:		bind-fallback-to-second-server.diff
-Patch1:		https://downloads.isc.org/isc/bind9/9.21.4/patches/0001-CVE-2024-11187.patch
-Patch2:		https://downloads.isc.org/isc/bind9/9.21.4/patches/0002-CVE-2024-12705.patch
-#Patch2:		bind-9.7.3-link.patch
-Patch3:		bind-9.12.2-json-c.patch
-Patch102:	bind-9.3.0rc2-sdb_mysql.patch
-Patch205:	bind-9.3.2-prctl_set_dumpable.patch
 
 BuildRequires:	file
-%if %{sdb_mysql}
-BuildRequires:	mysql-devel
-%endif
 %if %{with gssapi}
 BuildRequires:	pkgconfig(krb5)
 %endif
@@ -67,7 +44,6 @@ BuildRequires:	libtool
 BuildRequires:	libltdl-devel
 BuildRequires:	pkgconfig(libcap)
 BuildRequires:	geoip-devel
-BuildRequires:	mysql-devel
 BuildRequires:	pkgconfig(ldap)
 BuildRequires:	postgresql-devel
 BuildRequires:	pkgconfig(libidn2)
@@ -81,6 +57,7 @@ BuildRequires:	pkgconfig(readline)
 BuildRequires:	pkgconfig(libnghttp2)
 BuildRequires:	pkgconfig(liburcu)
 BuildRequires:	pkgconfig(liburcu-cds)
+BuildRequires:	pkgconfig(libfstrm)
 BuildRequires:	lmdb-devel
 BuildRequires:	doxygen
 BuildRequires:	xsltproc
@@ -90,6 +67,25 @@ Requires(pre):	systemd
 Requires:	bind-utils >= %{version}-%{release}
 # takes care of MDV Bug #: 62829
 Requires:	openssl-engines
+
+BuildSystem:	meson
+BuildOption:	-Ddoc=enabled
+BuildOption:	-Dcap=enabled
+BuildOption:	-Ddnstap=enabled
+BuildOption:	-Ddoh=enabled
+BuildOption:	-Dgeoip=enabled
+BuildOption:	-Dgssapi=enabled
+BuildOption:	-Didn=enabled
+BuildOption:	-Dline=enabled
+BuildOption:	-Dlmdb=enabled
+BuildOption:	-Dstats-json=enabled
+BuildOption:	-Dstats-xml=enabled
+BuildOption:	-Dzlib=enabled
+
+%patchlist
+bind-fallback-to-second-server.diff
+bind-9.3.2-prctl_set_dumpable.patch
+bind-9.21.14-compile.patch
 
 %description
 BIND (Berkeley Internet Name Domain) is an implementation of the DNS
@@ -120,9 +116,6 @@ New configuration options: "min-refresh-time", "max-refresh-time",
 "additional-from-cache", "notify explicit" 
 Faster lookups, particularly in large zones. 
 
-Build Options:
---with sdb_mysql      Build with MySQL database support
-
 %package utils
 Summary:	Utilities for querying DNS name servers
 Group:		Networking/Other
@@ -141,6 +134,9 @@ servers.
 %package libs
 Summary:	Libraries provided and used by bind
 Group:		System/Libraries
+# Not really, but something needs to compensate for the headers etc.
+# having been removed upstream. Nothing used the libraries anyway...
+Obsoletes:	%{name}-devel < %{EVRD}
 
 %description libs
 Libraries provided and used by bind
@@ -162,30 +158,9 @@ Group:		Books/Other
 %description doc
 The bind-devel package contains the documentation for BIND.
 
-%prep
-%if "%plevel" != ""
-%setup -q  -n %{name}-%{version}-%{plevel} -a2 -a3 -a12
-%else
-%setup -q  -n %{name}-%{version} -a2 -a3 -a12
-%endif
-
-%patch 0 -p1 -b .fallback-to-second-server.droplet
-#patch2 -p1 -b .link
-
-%if %{sdb_mysql}
-mv mysql-bind-0.1 contrib/sdb/mysql
-cp contrib/sdb/mysql/mysqldb.c bin/named
-cp contrib/sdb/mysql/mysqldb.h bin/named/include
-%patch 102 -p1 -b .sdb_mysql.droplet
-%endif
-
-%patch 205 -p1 -b .prctl_set_dumpable.droplet
-
-cp %{SOURCE4} named.init
-# fix https://qa.mandriva.com/show_bug.cgi?id=62829
-# so..., libgost.so needs to be in the chroot (ugly..., and will break backporting, well...)
-OPENSSL_ENGINESDIR=$(grep '^#define ENGINESDIR' %{multiarch_includedir}/openssl/opensslconf.h | cut -d\" -f2 | sed -e 's/^\///')
-perl -pi -e "s|_OPENSSL_ENGINESDIR_|$OPENSSL_ENGINESDIR|g" named.init
+%prep -a
+tar xf %{S:2}
+tar xf %{S:3}
 
 cp %{SOURCE6} named.sysconfig
 cp %{SOURCE7} keygen.c
@@ -207,106 +182,19 @@ cp %{SOURCE111} caching-nameserver/rndc.key
 cp %{SOURCE112} caching-nameserver/trusted_networks_acl.conf
 cp %{SOURCE113} caching-nameserver/named.iscdlv.key
 
-# strip away annoying ^M
-find . -type f|xargs file|grep 'CRLF'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
-find . -type f|xargs file|grep 'text'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
-
-%build
-%serverbuild
-# it does not work with -fPIE and someone added that to the serverbuild macro...
-CFLAGS=$(echo %{optflags}|sed -e 's|-fPIE||g')
-CXXFLAGS=$(echo %{optflags}|sed -e 's|-fPIE||g')
-
-export CC=%{__cc}
-export CXX=%{__cxx}
-export CPPFLAGS="$CPPFLAGS -DDIG_SIGCHASE"
-export STD_CDEFINES="$CPPFLAGS"
-
-libtoolize --force; aclocal -I m4 --force; autoheader --force; automake -a; autoconf --force
-
-export CFLAGS="$CFLAGS -DLDAP_DEPRECATED"
-
-# threading is evil for the host command
-%configure \
-	--localstatedir=/var \
-	--enable-largefile \
-	--with-openssl=%{_prefix} \
-	--with-libidn2
-
-# FIXME configure should be fixed instead of having to work around
-# its brokenness...
-echo '#define HAVE_JSON_C 1' >>config.h
-
-make -C lib
-make -C bin/dig
-make -C bin/dig DESTDIR="$(pwd)" install 
-make clean
-
-%configure \
-	--localstatedir=/var \
-	--enable-largefile \
-	--enable-epoll \
-	--with-openssl=%{_prefix} \
-	--with-libidn2 \
-%if %{with gssapi}
-	--with-gssapi=%{_prefix} \
-	--disable-isc-spnego \
-%else
-	--without-gssapi \
-%endif
-	--with-libxml2=yes
-
-# FIXME configure should be fixed instead of having to work around
-# its brokenness...
-echo '#define HAVE_JSON_C 1' >>config.h
-
-%make_build -j1
-
-%if %{sdb_mysql}
-cd contrib/sdb/mysql
-%{__cc} $CFLAGS -I%{_includedir}/mysql -I../../../lib/dns/include -I../../../lib/dns/sec/dst/include \
-  -I../../../lib/isc/include -I../../../lib/isc/unix/include -I../../../lib/isc/pthreads/include \
-  -c zonetodb.c
-%{_cc} $CFLAGS $LDFLAGS -o zonetodb zonetodb.o \
-  ../../../lib/dns/libdns.a -lcrypto -lpthread ../../../lib/isc/libisc.a \
-  -lmysqlclient -lresolv %{?_with_gssapi:$(krb5-config --libs gssapi)} -lxml2 -lGeoIP
-cd -
-%endif
-
+%build -a
 %{__cc} $CFLAGS -o dns-keygen keygen.c
 
-#%%check
-## run the test suite
-#make check
-
-%install
-cd doc
-    rm -rf html
-cd -
-
+%install -a
 # make some directories
-install -d %{buildroot}%{_initrddir}
 install -d %{buildroot}%{_sysconfdir}/sysconfig
 install -d %{buildroot}/var/run/named 
 
-%make_install
+ln -snf named %{buildroot}%{_bindir}/lwresd
 
-ln -snf named %{buildroot}%{_sbindir}/lwresd
-
-install -m0755 named.init %{buildroot}%{_initrddir}/named
 install -m0644 named.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/named
 
-%if %{sdb_mysql}
-install -m0755 contrib/sdb/mysql/zonetodb %{buildroot}%{_bindir}/
-cp contrib/sdb/mysql/ChangeLog contrib/sdb/mysql/ChangeLog.mysql
-cp contrib/sdb/mysql/README contrib/sdb/mysql/README.mysql
-%endif
-
-install -m0755 dns-keygen %{buildroot}%{_sbindir}/dns-keygen
-
-# install the non-threaded host command
-# fixes #16855
-install -m0755 usr/bin/host %{buildroot}%{_bindir}/
+install -m0755 dns-keygen %{buildroot}%{_bindir}/dns-keygen
 
 # make the chroot
 install -d %{buildroot}/var/lib/named/{dev,etc}
@@ -358,26 +246,22 @@ rm -rf %{buildroot}$RPM_BUILD_DIR
 
 install -Dpm 644 %{SOURCE1} %{buildroot}%{_sysusersdir}/%{name}.conf
 
-%pre
-%sysusers_create_package %{name} %{SOURCE1}
-
 %post
 if grep -q "_MY_KEY_" /var/lib/named/etc/rndc.conf /var/lib/named/etc/rndc.key; then
-    MYKEY="$(%{_sbindir}/dns-keygen)"
-    perl -pi -e "s|_MY_KEY_|$MYKEY|g" /var/lib/named/etc/rndc.conf /var/lib/named/etc/rndc.key
+    MYKEY="$(%{_bindir}/dns-keygen)"
+    sed -i -e "s|_MY_KEY_|$MYKEY|g" /var/lib/named/etc/rndc.conf /var/lib/named/etc/rndc.key
 fi
 
 %files
 %config(noreplace) %{_sysconfdir}/sysconfig/named
 %{_sysusersdir}/%{name}.conf
-%{_initrddir}/named
-%{_sbindir}/ddns-confgen
-%{_sbindir}/dns-keygen
-%{_sbindir}/lwresd
-%{_sbindir}/named
-%{_sbindir}/rndc
-%{_sbindir}/rndc-confgen
-%{_sbindir}/tsig-keygen
+%{_bindir}/ddns-confgen
+%{_bindir}/dns-keygen
+%{_bindir}/lwresd
+%{_bindir}/named
+%{_bindir}/rndc
+%{_bindir}/rndc-confgen
+%{_bindir}/tsig-keygen
 %{_bindir}/dnssec-cds
 %{_bindir}/dnssec-dsfromkey
 %{_bindir}/dnssec-importkey
@@ -392,11 +276,13 @@ fi
 %{_bindir}/named-checkzone
 %{_bindir}/named-compilezone
 %{_bindir}/named-journalprint
+%{_bindir}/named-makejournal
 %optional %{_bindir}/named-nzd2nzf
 %{_bindir}/nsec3hash
 %dir %{_libdir}/bind
 %{_libdir}/bind/filter-a.so
 %{_libdir}/bind/filter-aaaa.so
+%{_libdir}/bind/synthrecord.so
 %doc %{_mandir}/man1/arpaname.1*
 %doc %{_mandir}/man1/dnssec-ksr.1*
 %doc %{_mandir}/man5/named.conf.5*
@@ -453,6 +339,7 @@ fi
 %doc %{_mandir}/man1/named-checkzone.1*
 %doc %{_mandir}/man1/named-compilezone.1*
 %doc %{_mandir}/man1/named-journalprint.1*
+%doc %{_mandir}/man1/named-makejournal.1*
 %optional %doc %{_mandir}/man1/named-nzd2nzf.1*
 %doc %{_mandir}/man1/nsec3hash.1*
 %doc %{_mandir}/man8/filter-aaaa.8*
@@ -461,14 +348,11 @@ fi
 %doc %{_mandir}/man8/filter-a.8*
 
 %files libs
-%{_libdir}/lib*-%{version}.so
-
-%files devel
-%{_includedir}/*
-%{_libdir}/lib{bind9,dns,irs,isccc,isccfg,isc,ns}.so
+%{_libdir}/lib*.so
 
 %files utils
 %{_bindir}/dig
+%{_bindir}/dnstap-read
 %{_bindir}/host
 %{_bindir}/nslookup
 %{_bindir}/nsupdate
@@ -477,6 +361,7 @@ fi
 %{_bindir}/mdig
 %{_bindir}/named-rrchecker
 %doc %{_mandir}/man1/delv.1*
+%doc %{_mandir}/man1/dnstap-read.1*
 %doc %{_mandir}/man1/mdig.1*
 %doc %{_mandir}/man1/named-rrchecker.1*
 %doc %{_mandir}/man1/host.1*
@@ -488,8 +373,5 @@ fi
 
 %files doc
 %doc COPYRIGHT
-%if %{sdb_mysql}
-%doc contrib/sdb/mysql/ChangeLog.mysql contrib/sdb/mysql/README.mysql
-%endif
 %doc doc/misc/
 %doc doc/dhcp-dynamic-dns-examples doc/chroot doc/trustix

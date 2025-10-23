@@ -1,0 +1,12 @@
+diff -up bind-9.21.14/meson.build.omv~ bind-9.21.14/meson.build
+--- bind-9.21.14/meson.build.omv~	2025-10-23 03:19:23.307963089 +0200
++++ bind-9.21.14/meson.build	2025-10-23 03:19:36.679252874 +0200
+@@ -408,7 +408,7 @@ config.set_quoted('FUZZDIR', meson.proje
+ 
+ fuzz_link_args = []
+ if fuzz_opt.enabled()
+-    if fuzz_backed_opt != 'none'
++    if fuzz_backend_opt != 'none'
+         if get_option('b_lundef') != false
+             warning('fuzzing will fail to build properly without -Db_lundef=false')
+         endif

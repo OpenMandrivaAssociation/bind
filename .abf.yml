@@ -1,4 +1,4 @@
 sources:
   bind-dhcp-dynamic-dns-examples.tar.bz2: d33980aad3e0380fc89f8346ab37786d39157696
   bind-manpages.tar.bz2: 4b08b3d62490f536ae52c34cfab1343d01b326c6
-  bind-9.21.14.tar.xz: 878d3c0c87d68cc59cbf4fd99eba0728c8c054a8
+  bind-9.21.19.tar.xz: d9ed860215aaf6a8e1bd44c4233892ab98d8880c

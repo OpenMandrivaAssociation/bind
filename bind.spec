@@ -4,11 +4,11 @@
 %global _disable_ld_no_undefined 1
 
 # default options
-%bcond_with gssapi
+%bcond_without gssapi
 
 Summary:	A DNS (Domain Name System) server
 Name:		bind
-Version:	9.21.14
+Version:	9.21.19
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}%{?plevel:-%plevel}/%{name}-%{version}%{?plevel:-%{plevel}}.tar.xz
 Release:	1
 License:	MPL-2.0
@@ -39,9 +39,9 @@ Source113:	named.iscdlv.key
 BuildRequires:	file
 %if %{with gssapi}
 BuildRequires:	pkgconfig(krb5)
+BuildRequires:	pkgconfig(krb5-gssapi)
 %endif
-BuildRequires:	libtool
-BuildRequires:	libltdl-devel
+BuildRequires:	slibtool
 BuildRequires:	pkgconfig(libcap)
 BuildRequires:	geoip-devel
 BuildRequires:	pkgconfig(ldap)
@@ -58,7 +58,6 @@ BuildRequires:	pkgconfig(libnghttp2)
 BuildRequires:	pkgconfig(liburcu)
 BuildRequires:	pkgconfig(liburcu-cds)
 BuildRequires:	pkgconfig(libfstrm)
-BuildRequires:	pkgconfig(krb5-gssapi)
 BuildRequires:	pkgconfig(libprotobuf-c)
 BuildRequires:	lmdb-devel
 BuildRequires:	doxygen
@@ -73,11 +72,12 @@ Requires:	openssl-engines
 
 BuildSystem:	meson
 BuildOption:	-Ddoc=enabled
-BuildOption:	-Dcap=enabled
 BuildOption:	-Ddnstap=enabled
 BuildOption:	-Ddoh=enabled
 BuildOption:	-Dgeoip=enabled
+%if %{with gssapi}
 BuildOption:	-Dgssapi=enabled
+%endif
 BuildOption:	-Didn=enabled
 BuildOption:	-Djemalloc=disabled
 BuildOption:	-Dline=enabled
@@ -89,7 +89,6 @@ BuildOption:	-Dzlib=enabled
 %patchlist
 bind-fallback-to-second-server.diff
 bind-9.3.2-prctl_set_dumpable.patch
-bind-9.21.14-compile.patch
 
 %description
 BIND (Berkeley Internet Name Domain) is an implementation of the DNS

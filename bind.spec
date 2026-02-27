@@ -65,6 +65,7 @@ BuildRequires:	doxygen
 BuildRequires:	xsltproc
 BuildRequires:	python%{pyver}dist(sphinx)
 BuildRequires:	protobuf-compiler protobuf-c
+BuildRequires:	systemtap-devel
 %systemd_requires
 Requires(pre):	systemd
 Requires:	bind-utils >= %{version}-%{release}

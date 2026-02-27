@@ -43,7 +43,7 @@ BuildRequires:	pkgconfig(krb5-gssapi)
 %endif
 BuildRequires:	slibtool
 BuildRequires:	pkgconfig(libcap)
-BuildRequires:	geoip-devel
+BuildRequires:	pkgconfig(libmaxminddb)
 BuildRequires:	pkgconfig(ldap)
 BuildRequires:	postgresql-devel
 BuildRequires:	pkgconfig(libidn2)

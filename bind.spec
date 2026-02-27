@@ -59,10 +59,11 @@ BuildRequires:	pkgconfig(liburcu)
 BuildRequires:	pkgconfig(liburcu-cds)
 BuildRequires:	pkgconfig(libfstrm)
 BuildRequires:	pkgconfig(libprotobuf-c)
+BuildRequires:	pkgconfig(cmocka)
 BuildRequires:	lmdb-devel
 BuildRequires:	doxygen
 BuildRequires:	xsltproc
-BuildRequires:	python3dist(sphinx)
+BuildRequires:	python%{pyver}dist(sphinx)
 BuildRequires:	protobuf-compiler protobuf-c
 %systemd_requires
 Requires(pre):	systemd

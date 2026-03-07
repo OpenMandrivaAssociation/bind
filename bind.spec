@@ -10,7 +10,7 @@ Summary:	A DNS (Domain Name System) server
 Name:		bind
 Version:	9.21.19
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}%{?plevel:-%plevel}/%{name}-%{version}%{?plevel:-%{plevel}}.tar.xz
-Release:	1
+Release:	2
 License:	MPL-2.0
 Group:		System/Servers
 Url:		https://www.isc.org/bind/

@@ -8,9 +8,9 @@
 
 Summary:	A DNS (Domain Name System) server
 Name:		bind
-Version:	9.21.19
+Version:	9.21.25
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}%{?plevel:-%plevel}/%{name}-%{version}%{?plevel:-%{plevel}}.tar.xz
-Release:	4
+Release:	1
 License:	MPL-2.0
 Group:		System/Servers
 Url:		https://www.isc.org/bind/
@@ -186,6 +186,50 @@ cp %{SOURCE110} caching-nameserver/rndc.conf
 cp %{SOURCE111} caching-nameserver/rndc.key
 cp %{SOURCE112} caching-nameserver/trusted_networks_acl.conf
 cp %{SOURCE113} caching-nameserver/named.iscdlv.key
+
+# DNS query/response parsing is a classic PGO win. Train with the
+# built tools against a tiny local zone — no network required.
+%pgo
+_bd="$PWD/_OMV_rpm_build"
+export LD_LIBRARY_PATH="$_bd${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+named=
+checkconf=
+checkzone=
+dig=
+for d in "$_bd" "$_bd/bin" "$_bd/bin/named" "$_bd/bin/check" "$_bd/bin/dig"; do
+	[ -x "$d/named" ] && named="$d/named"
+	[ -x "$d/named-checkconf" ] && checkconf="$d/named-checkconf"
+	[ -x "$d/named-checkzone" ] && checkzone="$d/named-checkzone"
+	[ -x "$d/dig" ] && dig="$d/dig"
+done
+if [ -z "$named" ]; then
+	echo "PGO: instrumented named missing under $_bd" >&2
+	find "$_bd" -name named -type f 2>/dev/null | head
+	exit 1
+fi
+train=$(mktemp -d)
+trap 'rm -rf "$train"' EXIT
+cat > "$train/localhost.zone" <<'EOF'
+$TTL 86400
+@	IN	SOA	localhost. root.localhost. ( 1 3600 1800 604800 86400 )
+@	IN	NS	localhost.
+@	IN	A	127.0.0.1
+@	IN	AAAA	::1
+EOF
+cat > "$train/named.conf" <<EOF
+options { directory "$train"; recursion no; listen-on port 53554 { 127.0.0.1; }; pid-file "$train/named.pid"; };
+zone "localhost" { type primary; file "$train/localhost.zone"; };
+EOF
+[ -n "$checkconf" ] && "$checkconf" "$train/named.conf"
+[ -n "$checkzone" ] && "$checkzone" localhost "$train/localhost.zone"
+"$named" -u $(id -un) -c "$train/named.conf" >/dev/null 2>&1 &
+np=$!
+sleep 0.4
+[ -n "$dig" ] && "$dig" @127.0.0.1 -p 53554 localhost A +norecurse >/dev/null 2>&1 || true
+[ -n "$dig" ] && "$dig" @127.0.0.1 -p 53554 localhost AAAA +norecurse >/dev/null 2>&1 || true
+[ -n "$dig" ] && "$dig" @127.0.0.1 -p 53554 localhost SOA +norecurse >/dev/null 2>&1 || true
+kill "$np" 2>/dev/null || true
+wait "$np" 2>/dev/null || true
 
 %build -a
 %{__cc} $CFLAGS -o dns-keygen keygen.c

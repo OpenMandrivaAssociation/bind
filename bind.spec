@@ -285,6 +285,7 @@ fi
 %{_bindir}/named-compilezone
 %{_bindir}/named-journalprint
 %{_bindir}/named-makejournal
+%{_bindir}/named-wireformat
 %optional %{_bindir}/named-nzd2nzf
 %{_bindir}/nsec3hash
 %dir %{_libdir}/bind
@@ -354,6 +355,7 @@ fi
 %doc %{_mandir}/man8/named.8*
 %doc %{_mandir}/man8/ddns-confgen.8*
 %doc %{_mandir}/man8/filter-a.8*
+%doc %{_mandir}/man8/synthrecord.8*
 
 %files libs
 %{_libdir}/lib*.so

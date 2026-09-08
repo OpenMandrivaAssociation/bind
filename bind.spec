@@ -83,7 +83,7 @@ BuildOption:	-Dgssapi=enabled
 BuildOption:	-Didn=enabled
 BuildOption:	-Djemalloc=disabled
 BuildOption:	-Dline=enabled
-BuildOption:	-Dlmdb=enabled
+# 9.21.25: LMDB is an unconditional meson dependency, not a -D option
 BuildOption:	-Dstats-json=enabled
 BuildOption:	-Dstats-xml=enabled
 BuildOption:	-Dzlib=enabled

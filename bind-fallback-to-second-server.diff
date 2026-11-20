@@ -40,10 +40,9 @@ diff -up bind-9.17.20/bin/dig/host.c.fallback-to-second-server.droplet bind-9.17
  		case 'l':
  			lookup->tcp_mode = true;
  			lookup->rdtype = dns_rdatatype_axfr;
-diff -up bind-9.17.20/bin/dig/nslookup.c.fallback-to-second-server.droplet bind-9.17.20/bin/dig/nslookup.c
---- bind-9.17.20/bin/dig/nslookup.c.fallback-to-second-server.droplet	2021-11-05 08:13:41.058614455 +0100
-+++ bind-9.17.20/bin/dig/nslookup.c	2021-12-03 19:40:55.063305748 +0100
-@@ -43,7 +43,7 @@ static bool short_form = true, tcpmode =
+--- a/bin/dig/nslookup.c
++++ b/bin/dig/nslookup.c
+@@ -49,7 +49,7 @@
  	    identify = false, stats = true, comments = true,
  	    section_question = true, section_answer = true,
  	    section_authority = true, section_additional = true, recurse = true,
@@ -52,7 +51,7 @@ diff -up bind-9.17.20/bin/dig/nslookup.c.fallback-to-second-server.droplet bind-
  	    a_noanswer = false;
  
  static bool interactive;
-@@ -714,9 +714,10 @@ setoption(char *opt) {
+@@ -649,9 +649,10 @@
  		usesearch = false;
  	} else if (CHECKOPT("sil", 3)) {
  		/* deprecation_msg = false; */
@@ -63,5 +62,5 @@ diff -up bind-9.17.20/bin/dig/nslookup.c.fallback-to-second-server.droplet bind-
 -	} else if (CHECKOPT("nofail", 5)) {
 +	} else if (CHECKOPT("nofail", 6)) {
  		nofail = true;
- 	} else if (strncasecmp(opt, "ndots=", 6) == 0) {
- 		set_ndots(&opt[6]);
+ 	} else if ((val = isc_string_casestripprefix(opt, "ndots=")) != NULL) {
+ 		set_ndots(val);

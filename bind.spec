@@ -8,7 +8,7 @@
 
 Summary:	A DNS (Domain Name System) server
 Name:		bind
-Version:	9.21.25
+Version:	9.21.28
 Source0:	http://ftp.isc.org/isc/%{name}9/%{version}%{?plevel:-%plevel}/%{name}-%{version}%{?plevel:-%{plevel}}.tar.xz
 Release:	1
 License:	MPL-2.0
@@ -83,7 +83,7 @@ BuildOption:	-Dgssapi=enabled
 BuildOption:	-Didn=enabled
 BuildOption:	-Djemalloc=disabled
 BuildOption:	-Dline=enabled
-# 9.21.25: LMDB is an unconditional meson dependency, not a -D option
+# 9.21.28: LMDB is an unconditional meson dependency, not a -D option
 BuildOption:	-Dstats-json=enabled
 BuildOption:	-Dstats-xml=enabled
 BuildOption:	-Dzlib=enabled
